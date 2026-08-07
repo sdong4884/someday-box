@@ -36,3 +36,4 @@ src/
 
 - 작업 규칙: [CLAUDE.md](./CLAUDE.md)
 - 설계 결정과 배경: [docs/decisions.md](./docs/decisions.md)
+
