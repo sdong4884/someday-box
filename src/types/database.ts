@@ -12,7 +12,7 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.15"
   }
-  public: {
+  graphql_public: {
     Tables: {
       [_ in never]: never
     }
@@ -20,7 +20,106 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
       [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
+      capsules: {
+        Row: {
+          admin_password_hash: string
+          created_at: string
+          id: string
+          open_at: string
+          slug: string
+          title: string
+          write_until: string
+        }
+        Insert: {
+          admin_password_hash: string
+          created_at?: string
+          id?: string
+          open_at: string
+          slug?: string
+          title: string
+          write_until: string
+        }
+        Update: {
+          admin_password_hash?: string
+          created_at?: string
+          id?: string
+          open_at?: string
+          slug?: string
+          title?: string
+          write_until?: string
+        }
+        Relationships: []
+      }
+      letters: {
+        Row: {
+          capsule_id: string
+          content: string
+          created_at: string
+          id: string
+          nickname: string
+          password_hash: string
+          updated_at: string
+        }
+        Insert: {
+          capsule_id: string
+          content: string
+          created_at?: string
+          id?: string
+          nickname: string
+          password_hash: string
+          updated_at?: string
+        }
+        Update: {
+          capsule_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          nickname?: string
+          password_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "letters_capsule_id_fkey"
+            columns: ["capsule_id"]
+            isOneToOne: false
+            referencedRelation: "capsules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      generate_capsule_slug: { Args: never; Returns: string }
+      get_capsule_summary: {
+        Args: { p_slug: string }
+        Returns: {
+          letter_count: number
+          nicknames: string[]
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
@@ -149,6 +248,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
