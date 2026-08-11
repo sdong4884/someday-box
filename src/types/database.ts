@@ -112,12 +112,55 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_letter: {
+        Args: {
+          p_content: string
+          p_nickname: string
+          p_password: string
+          p_slug: string
+        }
+        Returns: {
+          capsule_id: string
+          content: string
+          created_at: string
+          id: string
+          nickname: string
+          updated_at: string
+        }[]
+      }
       generate_capsule_slug: { Args: never; Returns: string }
       get_capsule_summary: {
         Args: { p_slug: string }
         Returns: {
           letter_count: number
           nicknames: string[]
+        }[]
+      }
+      get_letter: {
+        Args: { p_nickname: string; p_password: string; p_slug: string }
+        Returns: {
+          capsule_id: string
+          content: string
+          created_at: string
+          id: string
+          nickname: string
+          updated_at: string
+        }[]
+      }
+      update_letter: {
+        Args: {
+          p_content: string
+          p_nickname: string
+          p_password: string
+          p_slug: string
+        }
+        Returns: {
+          capsule_id: string
+          content: string
+          created_at: string
+          id: string
+          nickname: string
+          updated_at: string
         }[]
       }
     }
