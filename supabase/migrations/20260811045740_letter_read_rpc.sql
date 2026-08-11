@@ -19,9 +19,13 @@
 -- 1. get_letter
 -- ---------------------------------------------------------------------------
 
--- 읽기 전용이지만 stable 이 아니라 volatile 이다. PostgREST 는 stable 함수에 GET 을
--- 허용하는데, 그러면 비밀번호가 URL 쿼리스트링에 실려 액세스 로그·브라우저 히스토리·
--- 리퍼러에 남는다. volatile 로 두면 POST 로만 호출된다.
+-- 읽기 전용이지만 stable 로 표시하지 않고 Postgres 기본값인 volatile 로 둔다.
+--
+-- 비밀번호가 URL 에 실리면 액세스 로그·브라우저 히스토리·리퍼러에 남으므로 호출은
+-- 반드시 POST 여야 한다. 다만 함수의 volatility 가 그걸 강제해주지는 않는다 —
+-- 이 프로젝트의 PostgREST 에서는 GET /rest/v1/rpc/get_letter?p_password=… 도
+-- 함수를 실행한다(volatile 인 create_letter 도 마찬가지). 실제 보호는 호출부에서
+-- 오며, supabase-js 의 .rpc() 가 기본으로 POST 를 쓴다.
 create or replace function public.get_letter(
   p_slug     text,
   p_nickname text,
