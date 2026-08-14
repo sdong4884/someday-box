@@ -9,8 +9,19 @@ import {
 } from "@/lib/rpcError";
 
 describe("getRpcErrorMessage", () => {
-  it("SB001~SB005 를 각각 다른 문구로 바꾼다", () => {
-    const codes = ["SB001", "SB002", "SB003", "SB004", "SB005"] as const;
+  it("SB001~SB010 을 각각 다른 문구로 바꾼다", () => {
+    const codes = [
+      "SB001",
+      "SB002",
+      "SB003",
+      "SB004",
+      "SB005",
+      "SB006",
+      "SB007",
+      "SB008",
+      "SB009",
+      "SB010",
+    ] as const;
 
     for (const code of codes) {
       expect(getRpcErrorMessage({ code })).toBe(SB_ERROR_MESSAGES[code]);
