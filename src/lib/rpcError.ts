@@ -1,11 +1,17 @@
 /**
  * RPC 실패를 사람이 읽는 문구로 바꾸는 유일한 지점.
  *
- * T2 의 함수들은 실패를 앱 전용 SQLSTATE 로 알린다
- * (supabase/migrations/20260811005629_letter_write_rpc.sql 의 주석 참고).
+ * RPC 들은 실패를 앱 전용 SQLSTATE 로 알린다. 코드가 어떤 조건에 붙는지는 각
+ * 마이그레이션의 헤더 주석에 있다.
+ * - SB001~SB005 : 편지 (20260811005629_letter_write_rpc.sql)
+ * - SB006~SB010 : 캡슐 생성 (20260814112913_capsule_create_error_codes.sql)
  *
  * DB 함수도 한국어 message 를 담아 raise 하지만 그 문구를 그대로 쓰지 않는다.
  * UI 문구가 마이그레이션에 묶이면 문구 하나 고치는 데 마이그레이션이 필요해진다.
+ *
+ * 캡슐 생성 폼(createCapsuleSchema)이 SB006~SB010 과 같은 규칙을 먼저 거르므로 이
+ * 문구들은 폼을 지나친 요청에만 보인다. 그래서 필드 옆 문구가 아니라 토스트에 그대로
+ * 띄울 수 있는 완결된 문장으로 쓴다.
  */
 
 export const SB_ERROR_MESSAGES = {
@@ -14,6 +20,11 @@ export const SB_ERROR_MESSAGES = {
   SB003: "편지 입력 기간이 끝났습니다.",
   SB004: "이미 사용 중인 닉네임입니다. 다른 닉네임을 써 주세요.",
   SB005: "비밀번호를 다시 확인해 주세요.",
+  SB006: "제목은 1~20자로 입력해 주세요.",
+  SB007: "입력 마감일이 이미 지난 날짜입니다. 다시 정해 주세요.",
+  SB008: "만료일은 입력 마감일보다 뒤여야 합니다.",
+  SB009: "만료일은 10년 이내로 정해 주세요.",
+  SB010: "만료일이 이미 지난 날짜입니다. 다시 정해 주세요.",
 } as const;
 
 export type SbErrorCode = keyof typeof SB_ERROR_MESSAGES;

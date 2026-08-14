@@ -41,7 +41,7 @@ export type Database = {
     Tables: {
       capsules: {
         Row: {
-          admin_password_hash: string
+          admin_password_hash: string | null
           created_at: string
           id: string
           open_at: string
@@ -50,7 +50,7 @@ export type Database = {
           write_until: string
         }
         Insert: {
-          admin_password_hash: string
+          admin_password_hash?: string | null
           created_at?: string
           id?: string
           open_at: string
@@ -59,7 +59,7 @@ export type Database = {
           write_until: string
         }
         Update: {
-          admin_password_hash?: string
+          admin_password_hash?: string | null
           created_at?: string
           id?: string
           open_at?: string
@@ -112,6 +112,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_capsule: {
+        Args: { p_open_at: string; p_title: string; p_write_until: string }
+        Returns: string
+      }
       create_letter: {
         Args: {
           p_content: string
