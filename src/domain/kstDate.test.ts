@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  addKstDays,
   addKstYears,
   isKstDateString,
   KST_OFFSET_MS,
@@ -118,5 +119,40 @@ describe("addKstYears", () => {
 
   it("잘못된 값은 던진다", () => {
     expect(() => addKstYears("2026-1-1", 10)).toThrow(RangeError);
+  });
+});
+
+describe("addKstDays", () => {
+  it("일수를 더한다", () => {
+    expect(addKstDays("2026-08-12", 1)).toBe("2026-08-13");
+    expect(addKstDays("2026-08-12", 2)).toBe("2026-08-14");
+  });
+
+  it("0 을 더하면 그대로다", () => {
+    expect(addKstDays("2026-08-12", 0)).toBe("2026-08-12");
+  });
+
+  it("월말을 넘긴다", () => {
+    expect(addKstDays("2026-01-31", 1)).toBe("2026-02-01");
+    expect(addKstDays("2026-04-30", 1)).toBe("2026-05-01");
+  });
+
+  it("연말을 넘긴다", () => {
+    expect(addKstDays("2026-12-31", 1)).toBe("2027-01-01");
+  });
+
+  // addKstYears 와 달리 클램프가 없다 — 넘침이 그대로 다음 날짜가 된다.
+  it("윤년의 2월 29일을 만든다", () => {
+    expect(addKstDays("2028-02-28", 1)).toBe("2028-02-29");
+    expect(addKstDays("2027-02-28", 1)).toBe("2027-03-01");
+  });
+
+  it("음수도 더한다", () => {
+    expect(addKstDays("2026-01-01", -1)).toBe("2025-12-31");
+  });
+
+  it("잘못된 값은 던진다", () => {
+    expect(() => addKstDays("2026-1-1", 1)).toThrow(RangeError);
+    expect(() => addKstDays("2026-02-30", 1)).toThrow(RangeError);
   });
 });

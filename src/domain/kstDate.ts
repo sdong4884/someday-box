@@ -129,3 +129,30 @@ export function addKstYears(value: string, years: number): KstDateString {
     day: Math.min(parts.day, lastDayOfMonth(year, parts.month)),
   });
 }
+
+/**
+ * 날짜에 일 단위로 더한다.
+ *
+ * 달·해를 넘기는 계산은 `Date.UTC` 의 넘침 처리에 맡긴다 — `Date.UTC(2026, 0, 32)` 는
+ * 2026-02-01 이 되므로 월말·연말·윤년을 따로 다룰 필요가 없다. `addKstYears` 와 달리
+ * 클램프가 없는 이유이기도 하다. 없는 날짜가 나올 수 없다.
+ *
+ * 폼에서 "작성 마감일 다음날"처럼 고를 수 있는 날짜의 하한을 만들 때 쓴다.
+ *
+ * @throws RangeError `kstDateStringToUtc` 와 같은 조건.
+ */
+export function addKstDays(value: string, days: number): KstDateString {
+  const parts = parseParts(value);
+
+  if (parts === null) {
+    throw new RangeError(`'YYYY-MM-DD' 형식의 날짜가 아닙니다: ${value}`);
+  }
+
+  const shifted = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + days));
+
+  return format({
+    year: shifted.getUTCFullYear(),
+    month: shifted.getUTCMonth() + 1,
+    day: shifted.getUTCDate(),
+  });
+}
