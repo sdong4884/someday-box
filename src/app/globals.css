@@ -32,3 +32,28 @@
   /* 컨트롤 높이 */
   --spacing-control: 44px;
 }
+
+@layer base {
+  /*
+    네이티브 컨트롤(날짜 피커, 스크롤바, 캐럿)을 어두운 배경에 맞춰 그리게 한다.
+    이게 없으면 input[type=date] 의 달력 아이콘이 검은색으로 찍혀 배경에 묻힌다.
+  */
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+  }
+
+  /*
+    <button> 의 UA 기본 커서는 화살표다. Tailwind preflight 도 이걸 바꾸지 않으므로
+    명시적으로 적는다. 새 버튼마다 클래스를 붙이는 걸 잊지 않으려고 base 에 둔다.
+    비활성 버튼은 제외한다 — 누를 수 없는 것에 포인터를 띄우면 거짓말이 된다.
+  */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
