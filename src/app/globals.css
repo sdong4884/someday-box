@@ -28,9 +28,11 @@
   /* 모서리 */
   --radius-card: 14px;
   --radius-pill: 22px;
+  --radius-button: 8px; /* CTA 버튼 */
 
   /* 컨트롤 높이 */
-  --spacing-control: 44px;
+  --spacing-control: 44px; /* 폼 입력창, 헤더 버튼 */
+  --spacing-cta: 52px; /* 화면 하단 주 버튼 */
 }
 
 @layer base {
