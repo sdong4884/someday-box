@@ -2,7 +2,7 @@
 
 import { CreateCapsuleForm } from "@/features/capsule/ui/CreateCapsuleForm";
 import {
-  DATE_INPUT_CLASS,
+  DateInput,
   Field,
   INPUT_CLASS,
   ScreenHeader,
@@ -53,13 +53,11 @@ function CreateCapsuleShell() {
           label="작성 마감일"
           hint="이 날짜까지만 편지를 남길 수 있어요."
         >
-          <input
+          <DateInput
             {...fieldAria({
               id: "writeUntil-shell",
               hint: "이 날짜까지만 편지를 남길 수 있어요.",
             })}
-            type="date"
-            className={DATE_INPUT_CLASS}
             disabled
           />
         </Field>
@@ -69,13 +67,11 @@ function CreateCapsuleShell() {
           label="공개일"
           hint="공개일이 되면 모든 편지가 한번에 열려요."
         >
-          <input
+          <DateInput
             {...fieldAria({
               id: "openAt-shell",
               hint: "공개일이 되면 모든 편지가 한번에 열려요.",
             })}
-            type="date"
-            className={DATE_INPUT_CLASS}
             disabled
           />
         </Field>

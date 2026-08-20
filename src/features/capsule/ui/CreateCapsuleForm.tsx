@@ -21,7 +21,7 @@ import {
   type CreateCapsuleInput,
 } from "@/features/capsule/model/createCapsuleSchema";
 import {
-  DATE_INPUT_CLASS,
+  DateInput,
   Field,
   INPUT_CLASS,
   ScreenHeader,
@@ -136,13 +136,11 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
           hint={WRITE_UNTIL_HINT}
           error={errors.writeUntil?.message}
         >
-          <input
+          <DateInput
             {...register("writeUntil")}
             {...writeUntilAria}
-            type="date"
             min={writeUntilMin}
             onClick={openDatePicker}
-            className={DATE_INPUT_CLASS}
           />
         </Field>
 
@@ -152,14 +150,12 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
           hint={OPEN_AT_HINT}
           error={errors.openAt?.message}
         >
-          <input
+          <DateInput
             {...register("openAt")}
             {...openAtAria}
-            type="date"
             min={openAtMin}
             max={openAtMax}
             onClick={openDatePicker}
-            className={DATE_INPUT_CLASS}
           />
         </Field>
       </div>

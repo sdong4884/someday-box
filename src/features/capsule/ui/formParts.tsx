@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from "react";
+import type { ComponentProps, MouseEvent, ReactNode } from "react";
 
 /**
  * 이 화면의 입력창·버튼 생김새를 모아 둔 곳.
@@ -11,17 +11,43 @@ import type { MouseEvent, ReactNode } from "react";
  */
 
 /**
+ * 입력칸 껍데기의 공통 생김새. 텍스트 칸은 input 자신이 쓰고, 날짜 칸은 감싸는 div 가 쓴다.
+ * 두 칸의 높이·테두리·여백이 갈라지지 않도록 한 군데서 낸다.
+ */
+const BOX_CLASS =
+  "h-control w-full rounded-card border border-line bg-surface px-3.5 transition-colors";
+
+/**
  * 글자 크기를 16px(`text-base`) 아래로 내리지 않는다. iOS 사파리는 그보다 작은 입력창에
  * 포커스가 가면 화면을 확대해 버리는데, 카카오톡 인앱 브라우저도 같은 엔진이다.
  */
-export const INPUT_CLASS =
-  "h-control w-full rounded-card border border-line bg-surface px-3.5 text-base text-ink outline-none transition-colors placeholder:text-ink-dim focus:border-accent disabled:bg-surface-muted disabled:text-ink-dim";
+export const INPUT_CLASS = `${BOX_CLASS} text-base text-ink outline-none placeholder:text-ink-dim focus:border-accent disabled:bg-surface-muted disabled:text-ink-dim`;
 
 /**
- * 날짜 칸. 커서만 다르다 — 글자를 넣는 칸이 아니라 누르면 달력이 열리는 칸이다.
- * 텍스트 칸(제목)은 캐럿이 맞으므로 INPUT_CLASS 에 넣지 않는다.
+ * 날짜 칸의 껍데기. 테두리·배경·높이를 input 이 아니라 이 div 가 그린다.
+ *
+ * iOS 사파리의 `input[type=date]` 는 UA 가 계산한 제 너비를 고집해서 `w-full` 을 줘도
+ * 패딩·테두리만큼 칸이 화면 밖으로 삐져나온다 — 아이폰에서 가로 스크롤이 생겼던 원인이고,
+ * 데스크톱 크롬에서는 재현되지 않는다. 껍데기가 폭을 잡고 입력창은 그 안에서 `min-w-0` 로
+ * 줄어드는 자식이 되면, 어느 웹뷰가 무슨 너비를 주장하든 바깥으로 샐 수 없다.
+ * `overflow-hidden` 이 마지막 방어선이다.
+ *
+ * 포커스는 `focus-within` 으로 안쪽 input 에서 받아 온다. 비활성 배경만 CSS 로 끌어오지
+ * 않고 prop 으로 받는데(DateInput), `:has()` 를 구형 인앱 웹뷰까지 믿고 쓸 이유가 없어서다 —
+ * 어차피 그 값을 이미 알고 있다.
  */
-export const DATE_INPUT_CLASS = `${INPUT_CLASS} cursor-pointer disabled:cursor-default`;
+const DATE_BOX_CLASS = `${BOX_CLASS} flex items-center gap-2 overflow-hidden focus-within:border-accent`;
+
+/**
+ * 껍데기 안에 들어가는 날짜 입력창. 생김새는 껍데기가 가져갔으므로 배경·테두리가 없다.
+ *
+ * `appearance-none` 으로 UA 가 강제하는 제 사이즈를 놓게 하고, 네이티브 달력 아이콘은
+ * 숨긴다 (아래 DateInput 주석 참고). `peer` 는 아이콘이 비활성 상태를 따라가기 위한 것.
+ *
+ * 커서는 포인터다 — 글자를 넣는 칸이 아니라 누르면 달력이 열리는 칸이다.
+ */
+const DATE_INPUT_CLASS =
+  "peer min-w-0 flex-1 cursor-pointer appearance-none bg-transparent text-base text-ink outline-none disabled:cursor-default disabled:text-ink-dim [&::-webkit-calendar-picker-indicator]:hidden";
 
 /**
  * 입력칸 아무 곳이나 눌러도 날짜 피커를 연다.
@@ -30,11 +56,8 @@ export const DATE_INPUT_CLASS = `${INPUT_CLASS} cursor-pointer disabled:cursor-d
  * 너무 작다. showPicker() 는 표준 API 이고, 클릭이 사용자 제스처라 호출 조건을 만족한다.
  *
  * 구형 인앱 웹뷰에는 이 메서드가 없을 수 있고 상태에 따라 던지기도 한다
- * (제스처 없이 불리면 NotAllowedError). 둘 다 삼킨다 — 실패해도 아이콘을 누르는 원래
- * 동작이 그대로 남으므로 잃는 것이 없다.
- *
- * CSS 로 ::-webkit-calendar-picker-indicator 를 칸 전체로 늘리는 방법도 있지만
- * webkit 전용이라 쓰지 않는다.
+ * (제스처 없이 불리면 NotAllowedError). 둘 다 삼킨다 — 실패해도 칸을 누르면 브라우저가
+ * 여는 기본 동작이 그대로 남으므로 잃는 것이 없다.
  */
 export function openDatePicker(event: MouseEvent<HTMLInputElement>) {
   const input = event.currentTarget;
@@ -46,6 +69,51 @@ export function openDatePicker(event: MouseEvent<HTMLInputElement>) {
   } catch {
     // 열지 못해도 화면은 그대로 동작한다.
   }
+}
+
+/**
+ * 날짜 칸. 껍데기·입력창·아이콘을 한 벌로 묶는다.
+ *
+ * 달력 아이콘을 직접 그리는 이유: iOS 사파리는
+ * `::-webkit-calendar-picker-indicator` 를 아예 그리지 않고 데스크톱 크롬은 그린다.
+ * 그대로 두면 기기마다 아이콘이 있다 없다 해서, 정작 주 유입 경로인 모바일에서 날짜 칸이
+ * 빈 상자로 보인다. 그래서 네이티브 쪽은 숨기고 우리 SVG 하나로 통일한다. 여는 동작은
+ * `openDatePicker` 가 칸 전체에 걸어 두므로 아이콘은 표시만 맡는다.
+ *
+ * `type`·`className` 은 받지 않는다 — 껍데기와 입력창이 짝이라는 전제를 호출부가 깨면
+ * 넘침이 되돌아온다.
+ */
+export function DateInput(
+  props: Omit<ComponentProps<"input">, "type" | "className">,
+) {
+  const boxClass = props.disabled
+    ? `${DATE_BOX_CLASS} bg-surface-muted`
+    : DATE_BOX_CLASS;
+
+  return (
+    <div className={boxClass}>
+      <input {...props} type="date" className={DATE_INPUT_CLASS} />
+      <CalendarIcon />
+    </div>
+  );
+}
+
+/** 날짜 칸의 달력 표시. 탭은 입력창이 받아야 하므로 이벤트를 통과시킨다. */
+function CalendarIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      aria-hidden="true"
+      className="pointer-events-none size-5 shrink-0 text-accent-soft peer-disabled:text-ink-dim"
+    >
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </svg>
+  );
 }
 
 export const LABEL_CLASS = "text-sm text-ink-muted";
