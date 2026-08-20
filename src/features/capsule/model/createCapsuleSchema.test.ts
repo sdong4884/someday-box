@@ -138,7 +138,7 @@ describe("createCapsuleSchema", () => {
       ).toEqual([]);
     });
 
-    it("만료일도 오늘이면 실패한다", () => {
+    it("공개일도 오늘이면 실패한다", () => {
       expect(
         messagesFor(
           withField({ writeUntil: "2026-08-01", openAt: TODAY }),
@@ -158,7 +158,7 @@ describe("createCapsuleSchema", () => {
       ).toEqual([MESSAGES.periodOrder]);
     });
 
-    it("만료일이 더 앞서면 실패한다", () => {
+    it("공개일이 더 앞서면 실패한다", () => {
       expect(
         messagesFor(
           withField({ writeUntil: "2026-12-25", openAt: "2026-09-01" }),
@@ -177,7 +177,7 @@ describe("createCapsuleSchema", () => {
     });
   });
 
-  describe("만료일 10년 상한", () => {
+  describe("공개일 10년 상한", () => {
     it("정확히 10년 뒤는 통과한다", () => {
       expect(
         messagesFor(withField({ openAt: TEN_YEARS_LATER }), "openAt"),
