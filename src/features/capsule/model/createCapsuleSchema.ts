@@ -14,6 +14,10 @@ import {
  * zod 는 domain/ 에 두지 않는다 — 날짜 계산 자체는 순수 함수라 domain/kstDate.ts 에
  * 있고, 여기는 그 계산 위에 "폼 필드 이름"과 "사용자에게 보일 문구"를 얹는 UI 계층이다.
  *
+ * 문구의 용어는 화면 라벨을 따른다 — `작성 마감일`, `공개일`. DB·마이그레이션 주석에는
+ * `입력 마감일`, `만료일` 이 남아 있지만 그건 내부 용어고 사용자에게 보이지 않는다
+ * (docs/decisions.md §6).
+ *
  * DB 제약과의 관계:
  * - 기간 규칙은 capsules_period_order / capsules_open_at_max 의 앞단 방어다. 최종
  *   판정은 언제나 DB 가 한다.
@@ -28,12 +32,12 @@ export const CAPSULE_OPEN_AT_MAX_YEARS = 10;
 export const CAPSULE_FORM_MESSAGES = {
   titleRequired: "제목을 입력해 주세요.",
   titleTooLong: `제목은 ${CAPSULE_TITLE_MAX_LENGTH}자까지 쓸 수 있어요.`,
-  writeUntilFormat: "입력 마감일을 선택해 주세요.",
-  openAtFormat: "만료일을 선택해 주세요.",
-  writeUntilPast: "입력 마감일은 내일 이후로 정해 주세요.",
-  openAtPast: "만료일은 내일 이후로 정해 주세요.",
-  periodOrder: "만료일은 입력 마감일보다 뒤여야 해요.",
-  openAtTooFar: `만료일은 ${CAPSULE_OPEN_AT_MAX_YEARS}년 이내로 정해 주세요.`,
+  writeUntilFormat: "작성 마감일을 선택해 주세요.",
+  openAtFormat: "공개일을 선택해 주세요.",
+  writeUntilPast: "작성 마감일은 내일 이후로 정해 주세요.",
+  openAtPast: "공개일은 내일 이후로 정해 주세요.",
+  periodOrder: "공개일은 작성 마감일보다 뒤여야 해요.",
+  openAtTooFar: `공개일은 ${CAPSULE_OPEN_AT_MAX_YEARS}년 이내로 정해 주세요.`,
 } as const;
 
 /**

@@ -21,7 +21,7 @@ import {
   type CreateCapsuleInput,
 } from "@/features/capsule/model/createCapsuleSchema";
 import {
-  DATE_INPUT_CLASS,
+  DateInput,
   Field,
   INPUT_CLASS,
   ScreenHeader,
@@ -56,12 +56,17 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
     formState: { errors },
   } = useForm<CreateCapsuleInput>({
     resolver: zodResolver(schema),
+    // 칸을 벗어나는 순간 첫 검증이 돌고, 그 뒤로는 고칠 때마다 즉시 재검증된다.
+    // 달력이 min/max 를 지키지 않는 웹뷰(iOS)에서 범위 밖 날짜를 골라도 제출까지
+    // 기다리지 않고 바로 알 수 있다.
+    mode: "onTouched",
     defaultValues: { title: "", writeUntil: "", openAt: "" },
   });
 
   // watch() 가 아니라 useWatch 를 쓴다. watch 가 돌려주는 함수는 메모이즈할 수 없어서
   // React Compiler 가 이 컴포넌트의 컴파일을 통째로 건너뛴다.
   const writeUntil = useWatch({ control, name: "writeUntil" });
+  const openAt = useWatch({ control, name: "openAt" });
 
   const mutation = useMutation({
     mutationFn: createCapsule,
@@ -87,12 +92,22 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
 
   // 달력에서 고를 수 있는 범위를 스키마와 같은 규칙으로 좁힌다. 스키마가 어차피 거부할
   // 날짜를 아예 집지 못하게 해서, 고를 수 있는 날짜와 통과하는 날짜를 일치시킨다.
+  //
+  // 두 칸이 서로의 범위를 좁힌다 — 공개일이 정해지면 작성 마감일의 상한이 되고, 그 반대도
+  // 마찬가지다. 다만 이건 어디까지나 달력에 주는 힌트다. 지키는지는 브라우저 재량이고
+  // (iOS 는 막아 주지 않는다) 실제 판정은 zod 와 DB 가 한다. form 의 noValidate 참고.
   const today = toKstDateString(now);
+  const openAtLimit = addKstYears(today, CAPSULE_OPEN_AT_MAX_YEARS);
+
   const writeUntilMin = addKstDays(today, 1);
+  const writeUntilMax = isKstDateString(openAt)
+    ? addKstDays(openAt, -1)
+    : addKstDays(openAtLimit, -1);
+
   const openAtMin = isKstDateString(writeUntil)
     ? addKstDays(writeUntil, 1)
     : addKstDays(today, 2);
-  const openAtMax = addKstYears(today, CAPSULE_OPEN_AT_MAX_YEARS);
+  const openAtMax = openAtLimit;
 
   const titleAria = fieldAria({ id: "title", error: errors.title?.message });
   const writeUntilAria = fieldAria({
@@ -109,6 +124,10 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
   return (
     <form
       onSubmit={handleSubmit((values) => mutation.mutate(values))}
+      // 네이티브 제약 검증을 끈다. min/max 는 달력 범위를 좁히려고 붙인 것인데, 그대로 두면
+      // 브라우저가 제출 시 자기 말풍선을 띄우고 submit 이벤트 자체를 막아 zod 문구가 화면에
+      // 닿지 못한다. 판정은 zod 하나로 모으고 문구는 전부 칸 아래에 붙인다.
+      noValidate
       className="flex flex-1 flex-col"
     >
       <ScreenHeader
@@ -136,13 +155,13 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
           hint={WRITE_UNTIL_HINT}
           error={errors.writeUntil?.message}
         >
-          <input
+          <DateInput
             {...register("writeUntil")}
             {...writeUntilAria}
-            type="date"
             min={writeUntilMin}
+            max={writeUntilMax}
             onClick={openDatePicker}
-            className={DATE_INPUT_CLASS}
+            isEmpty={!writeUntil}
           />
         </Field>
 
@@ -152,14 +171,13 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
           hint={OPEN_AT_HINT}
           error={errors.openAt?.message}
         >
-          <input
+          <DateInput
             {...register("openAt")}
             {...openAtAria}
-            type="date"
             min={openAtMin}
             max={openAtMax}
             onClick={openDatePicker}
-            className={DATE_INPUT_CLASS}
+            isEmpty={!openAt}
           />
         </Field>
       </div>
