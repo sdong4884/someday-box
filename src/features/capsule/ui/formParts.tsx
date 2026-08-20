@@ -36,7 +36,7 @@ export const INPUT_CLASS = `${BOX_CLASS} text-base text-ink outline-none placeho
  * 않고 prop 으로 받는데(DateInput), `:has()` 를 구형 인앱 웹뷰까지 믿고 쓸 이유가 없어서다 —
  * 어차피 그 값을 이미 알고 있다.
  */
-const DATE_BOX_CLASS = `${BOX_CLASS} flex items-center gap-2 overflow-hidden focus-within:border-accent`;
+const DATE_BOX_CLASS = `${BOX_CLASS} relative flex items-center gap-2 overflow-hidden focus-within:border-accent`;
 
 /**
  * 껍데기 안에 들어가는 날짜 입력창. 생김새는 껍데기가 가져갔으므로 배경·테두리가 없다.
@@ -47,7 +47,24 @@ const DATE_BOX_CLASS = `${BOX_CLASS} flex items-center gap-2 overflow-hidden foc
  * 커서는 포인터다 — 글자를 넣는 칸이 아니라 누르면 달력이 열리는 칸이다.
  */
 const DATE_INPUT_CLASS =
-  "peer min-w-0 flex-1 cursor-pointer appearance-none bg-transparent text-base text-ink outline-none disabled:cursor-default disabled:text-ink-dim [&::-webkit-calendar-picker-indicator]:hidden";
+  "peer min-w-0 flex-1 cursor-pointer appearance-none bg-transparent text-base text-ink outline-none disabled:cursor-default disabled:text-ink-dim [&::-webkit-calendar-picker-indicator]:hidden [&[data-empty]::-webkit-datetime-edit]:opacity-0";
+
+/**
+ * 빈 날짜 칸에 보일 문구.
+ *
+ * `placeholder` 속성은 `type="date"` 에서 무시되므로 직접 그린다. 데스크톱 크롬은 UA
+ * 기본값(`연도. 월. 일.`)을 그리는데 iOS 는 빈 칸을 그냥 비워 두기 때문에, UA 문구는
+ * 가리고(`[&[data-empty]::-webkit-datetime-edit]:opacity-0`) 우리 문구 하나로 통일한다.
+ *
+ * 알려진 한계: 파이어폭스에는 `::-webkit-datetime-edit` 가 없어 UA 문구와 겹쳐 보인다.
+ * 이 앱은 모바일 전용이고 대상(iOS 사파리·안드로이드 크롬·카카오 인앱)이 전부 WebKit/Blink
+ * 라 @supports 분기까지 만들지 않는다.
+ */
+const DATE_PLACEHOLDER = "연도-월-일";
+
+/** 입력창 위에 겹쳐 놓는다. 탭은 입력창이 받아야 하므로 이벤트를 통과시킨다. */
+const DATE_PLACEHOLDER_CLASS =
+  "pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-base text-ink-dim";
 
 /**
  * 입력칸 아무 곳이나 눌러도 날짜 피커를 연다.
@@ -82,17 +99,29 @@ export function openDatePicker(event: MouseEvent<HTMLInputElement>) {
  *
  * `type`·`className` 은 받지 않는다 — 껍데기와 입력창이 짝이라는 전제를 호출부가 깨면
  * 넘침이 되돌아온다.
+ *
+ * `isEmpty` 는 호출부가 알려 준다. 폼은 RHF 로 값을 비제어로 다루므로 입력창에 `value` 를
+ * 넘길 수 없고, 값을 아는 쪽은 `useWatch` 를 든 호출부다.
  */
-export function DateInput(
-  props: Omit<ComponentProps<"input">, "type" | "className">,
-) {
+export function DateInput({
+  isEmpty = false,
+  ...props
+}: Omit<ComponentProps<"input">, "type" | "className"> & {
+  isEmpty?: boolean;
+}) {
   const boxClass = props.disabled
     ? `${DATE_BOX_CLASS} bg-surface-muted`
     : DATE_BOX_CLASS;
 
   return (
     <div className={boxClass}>
-      <input {...props} type="date" className={DATE_INPUT_CLASS} />
+      <input
+        {...props}
+        type="date"
+        data-empty={isEmpty || undefined}
+        className={DATE_INPUT_CLASS}
+      />
+      {isEmpty && <span className={DATE_PLACEHOLDER_CLASS}>{DATE_PLACEHOLDER}</span>}
       <CalendarIcon />
     </div>
   );

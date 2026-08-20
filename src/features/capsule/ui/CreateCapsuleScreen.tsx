@@ -59,6 +59,7 @@ function CreateCapsuleShell() {
               hint: "이 날짜까지만 편지를 남길 수 있어요.",
             })}
             disabled
+            isEmpty
           />
         </Field>
 
@@ -73,6 +74,7 @@ function CreateCapsuleShell() {
               hint: "공개일이 되면 모든 편지가 한번에 열려요.",
             })}
             disabled
+            isEmpty
           />
         </Field>
       </div>
