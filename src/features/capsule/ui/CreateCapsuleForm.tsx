@@ -133,7 +133,7 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
       <ScreenHeader
         submitLabel={mutation.isPending ? "만드는 중" : "생성"}
         submitDisabled={mutation.isPending}
-        onCancel={() => router.back()}
+        onCancel={() => router.push("/")}
       />
 
       <div className="flex flex-col gap-6 px-5 py-6">
