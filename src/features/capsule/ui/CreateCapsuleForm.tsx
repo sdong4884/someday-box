@@ -71,9 +71,7 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
   const mutation = useMutation({
     mutationFn: createCapsule,
     onSuccess: (slug) => {
-      // 캡슐 화면이 생기면 여기서 router.push(`/c/${slug}`) 로 바로 넘긴다.
-      // 그때 이 로그도 함께 지운다 — 화면이 바뀌면 slug 를 눈으로 볼 일이 없다.
-      console.log(`캡슐 생성 완료: ${slug}`);
+      router.push(`/c/${slug}`);
     },
     onError: (error) => {
       // 폼이 고칠 수 있는 실패는 해당 칸에 붙이고, 나머지(권한·스키마 캐시·네트워크)는
