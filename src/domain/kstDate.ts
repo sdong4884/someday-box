@@ -55,6 +55,16 @@ function format({ year, month, day }: DateParts): KstDateString {
   return `${pad(year, 4)}-${pad(month, 2)}-${pad(day, 2)}`;
 }
 
+function toKstParts(date: Date): DateParts {
+  const shifted = new Date(date.getTime() + KST_OFFSET_MS);
+
+  return {
+    year: shifted.getUTCFullYear(),
+    month: shifted.getUTCMonth() + 1,
+    day: shifted.getUTCDate(),
+  };
+}
+
 /** 해당 연·월의 마지막 날. 다음 달 0일 = 이번 달 말일. */
 function lastDayOfMonth(year: number, month: number): number {
   return new Date(Date.UTC(year, month, 0)).getUTCDate();
@@ -90,13 +100,7 @@ export function kstDateStringToUtc(value: string): Date {
  * `2026-12-31T15:00:00Z` 는 KST 로 이미 1월 1일이므로 `'2027-01-01'` 이다.
  */
 export function toKstDateString(date: Date): KstDateString {
-  const shifted = new Date(date.getTime() + KST_OFFSET_MS);
-
-  return format({
-    year: shifted.getUTCFullYear(),
-    month: shifted.getUTCMonth() + 1,
-    day: shifted.getUTCDate(),
-  });
+  return format(toKstParts(date));
 }
 
 /** `now` 가 속한 KST 날짜의 00:00. 그날의 시작 시각이 필요할 때 쓴다. */
@@ -155,4 +159,11 @@ export function addKstDays(value: string, days: number): KstDateString {
     month: shifted.getUTCMonth() + 1,
     day: shifted.getUTCDate(),
   });
+}
+
+/** `2026-12-31T15:00:00Z` → `'2027년 1월 1일'` */
+export function formatKstDate(date: Date): string {
+  const { year, month, day } = toKstParts(date);
+
+  return `${year}년 ${month}월 ${day}일`;
 }

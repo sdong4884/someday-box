@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   addKstDays,
   addKstYears,
+  formatKstDate,
   isKstDateString,
   KST_OFFSET_MS,
   kstDateStringToUtc,
@@ -154,5 +155,43 @@ describe("addKstDays", () => {
   it("잘못된 값은 던진다", () => {
     expect(() => addKstDays("2026-1-1", 1)).toThrow(RangeError);
     expect(() => addKstDays("2026-02-30", 1)).toThrow(RangeError);
+  });
+});
+
+describe("formatKstDate", () => {
+  it("월·일에 0 을 붙이지 않는다", () => {
+    expect(formatKstDate(kstDateStringToUtc("2027-01-01"))).toBe(
+      "2027년 1월 1일",
+    );
+    expect(formatKstDate(kstDateStringToUtc("2027-12-25"))).toBe(
+      "2027년 12월 25일",
+    );
+  });
+
+  it("14:59:59Z 는 아직 같은 날이다", () => {
+    expect(formatKstDate(new Date("2026-12-31T14:59:59.999Z"))).toBe(
+      "2026년 12월 31일",
+    );
+  });
+
+  it("15:00:00Z 부터 다음 날이다", () => {
+    expect(formatKstDate(new Date("2026-12-31T15:00:00.000Z"))).toBe(
+      "2027년 1월 1일",
+    );
+  });
+
+  it("윤년의 2월 29일도 그대로 적는다", () => {
+    expect(formatKstDate(kstDateStringToUtc("2028-02-29"))).toBe(
+      "2028년 2월 29일",
+    );
+  });
+
+  it("toKstDateString 과 같은 날짜를 가리킨다", () => {
+    const date = new Date("2026-08-21T02:30:00.000Z");
+    const [year, month, day] = toKstDateString(date).split("-");
+
+    expect(formatKstDate(date)).toBe(
+      `${Number(year)}년 ${Number(month)}월 ${Number(day)}일`,
+    );
   });
 });
