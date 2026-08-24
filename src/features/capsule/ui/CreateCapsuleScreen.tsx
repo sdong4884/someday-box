@@ -7,7 +7,7 @@ import {
   INPUT_CLASS,
   ScreenHeader,
   fieldAria,
-} from "@/features/capsule/ui/formParts";
+} from "@/shared/ui/formParts";
 import { useNow } from "@/shared/time/useNow";
 
 /**
@@ -35,7 +35,7 @@ export function CreateCapsuleScreen() {
 function CreateCapsuleShell() {
   return (
     <div className="flex flex-1 flex-col">
-      <ScreenHeader submitLabel="생성" submitDisabled />
+      <ScreenHeader title="새 캡슐" submitLabel="생성" submitDisabled />
 
       <div className="flex flex-col gap-6 px-5 py-6">
         <Field id="title-shell" label="캡슐 제목">
