@@ -13,6 +13,8 @@
 
 export const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 /** 'YYYY-MM-DD' 형식의 날짜 문자열. 값 자체가 실재하는 날짜인지는 보장하지 않는다. */
 export type KstDateString = string;
 
@@ -159,6 +161,22 @@ export function addKstDays(value: string, days: number): KstDateString {
     month: shifted.getUTCMonth() + 1,
     day: shifted.getUTCDate(),
   });
+}
+
+/**
+ * 두 시각 사이의 **KST 날짜** 차이. `to` 가 나중이면 양수.
+ *
+ * 시각이 아니라 날짜를 뺀다 — 양쪽을 그날 00:00 으로 내린 뒤 계산하므로
+ * `23:59 → 다음날 00:01` 은 1이다. D-day 표기가 원하는 셈법이 이것이다.
+ *
+ * KST 는 서머타임이 없어 하루가 항상 정확히 86400000ms 다. `Math.round` 는
+ * 그 전제가 깨졌을 때 소수점이 새어 나오지 않게 하는 방어선이다.
+ */
+export function diffKstDays(from: Date, to: Date): number {
+  const fromDay = startOfKstDay(from).getTime();
+  const toDay = startOfKstDay(to).getTime();
+
+  return Math.round((toDay - fromDay) / DAY_MS);
 }
 
 /** `2026-12-31T15:00:00Z` → `'2027년 1월 1일'` */

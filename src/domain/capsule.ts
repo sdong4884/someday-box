@@ -1,5 +1,6 @@
 import {
   addKstDays,
+  diffKstDays,
   kstDateStringToUtc,
   type KstDateString,
   toKstDateString,
@@ -61,4 +62,18 @@ export function writeUntilFromKstDate(date: KstDateString): Date {
  */
 export function writeUntilDisplayDate(writeUntil: Date): Date {
   return kstDateStringToUtc(addKstDays(toKstDateString(writeUntil), -1));
+}
+
+/**
+ * 작성 마감일까지 남은 날수. 마감일 당일이면 0.
+ *
+ * 기준은 저장된 `writeUntil` 이 아니라 사용자가 **고른 날짜**다. `writeUntil` 은 그
+ * 다음날 00:00 이라(이슈 #20) 그대로 빼면 하루가 더 나온다 — 마감일 당일에 D-1 이 뜬다.
+ * 그래서 `writeUntilDisplayDate` 로 되돌린 뒤 센다.
+ *
+ * WRITING 인 동안에는 항상 0 이상이다. `now < writeUntil` 이면 `now` 의 KST 날짜가
+ * 마감일을 넘을 수 없기 때문이다.
+ */
+export function getWriteDaysLeft(period: CapsulePeriod, now: Date): number {
+  return diffKstDays(now, writeUntilDisplayDate(period.writeUntil));
 }
