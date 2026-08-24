@@ -1,27 +1,30 @@
 import type { ComponentProps, MouseEvent, ReactNode } from "react";
 
 /**
- * 이 화면의 입력창·버튼 생김새를 모아 둔 곳.
- *
- * 아직 앱 공용(`shared/ui`)으로 올리지 않는다. 지금 이걸 나눠 쓰는 건 "재사용"이 아니라
- * 마운트 게이트 때문에 같은 뼈대를 폼과 비활성 셸에 두 번 그려야 해서다. 공용 API 는
- * 두 번째 사용처(편지 작성 폼)를 보고 정한다.
+ * 폼 화면의 입력창·버튼 생김새를 모아 둔 곳.
  *
  * 색은 globals.css 의 토큰만 쓴다. 임의 hex 금지 (CLAUDE.md 디자인).
  */
 
 /**
  * 입력칸 껍데기의 공통 생김새. 텍스트 칸은 input 자신이 쓰고, 날짜 칸은 감싸는 div 가 쓴다.
- * 두 칸의 높이·테두리·여백이 갈라지지 않도록 한 군데서 낸다.
+ * 두 칸의 테두리·배경·여백이 갈라지지 않도록 한 군데서 낸다.
+ *
+ * 높이는 여기 없다 — textarea 가 제 높이를 따로 잡는다.
  */
-const BOX_CLASS =
-  "h-control w-full rounded-card border border-line bg-surface px-3.5 transition-colors";
+const BOX_BASE =
+  "w-full rounded-card border border-line bg-surface px-3.5 transition-colors";
+
+const BOX_CLASS = `h-control ${BOX_BASE}`;
 
 /**
  * 글자 크기를 16px(`text-base`) 아래로 내리지 않는다. iOS 사파리는 그보다 작은 입력창에
  * 포커스가 가면 화면을 확대해 버리는데, 카카오톡 인앱 브라우저도 같은 엔진이다.
  */
 export const INPUT_CLASS = `${BOX_CLASS} text-base text-ink outline-none placeholder:text-ink-dim focus:border-accent disabled:bg-surface-muted disabled:text-ink-dim`;
+
+/** `text-base` 는 INPUT_CLASS 와 같은 이유다 (iOS 확대 방지). */
+export const TEXTAREA_CLASS = `${BOX_BASE} h-52 resize-none py-3 text-base leading-[1.6] text-ink outline-none placeholder:text-ink-dim focus:border-accent disabled:bg-surface-muted disabled:text-ink-dim`;
 
 /**
  * 날짜 칸의 껍데기. 테두리·배경·높이를 input 이 아니라 이 div 가 그린다.
@@ -159,10 +162,12 @@ const HEADER_BUTTON_CLASS =
  * 안에 들어간다.
  */
 export function ScreenHeader({
+  title,
   submitLabel,
   submitDisabled,
   onCancel,
 }: {
+  title: string;
   submitLabel: string;
   submitDisabled: boolean;
   onCancel?: () => void;
@@ -179,7 +184,7 @@ export function ScreenHeader({
       </button>
 
       <h1 className="justify-self-center text-base font-semibold text-ink">
-        새 캡슐
+        {title}
       </h1>
 
       <button

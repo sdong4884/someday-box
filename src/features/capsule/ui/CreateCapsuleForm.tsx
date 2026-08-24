@@ -27,7 +27,7 @@ import {
   ScreenHeader,
   fieldAria,
   openDatePicker,
-} from "@/features/capsule/ui/formParts";
+} from "@/shared/ui/formParts";
 import { getRpcErrorMessage } from "@/lib/rpcError";
 import { showToast } from "@/shared/toast/toastStore";
 
@@ -129,6 +129,7 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
       className="flex flex-1 flex-col"
     >
       <ScreenHeader
+        title="새 캡슐"
         submitLabel={mutation.isPending ? "만드는 중" : "생성"}
         submitDisabled={mutation.isPending}
         onCancel={() => router.push("/")}
