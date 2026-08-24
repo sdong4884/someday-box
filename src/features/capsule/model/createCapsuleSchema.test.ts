@@ -116,10 +116,11 @@ describe("createCapsuleSchema", () => {
   });
 
   describe("오늘 이후", () => {
-    it("오늘은 실패한다", () => {
+    // 저장은 고른 날짜의 다음날 00:00 이라 오늘을 골라도 "오늘까지 쓰기" 가 성립한다.
+    it("오늘은 통과한다", () => {
       expect(
         messagesFor(withField({ writeUntil: TODAY }), "writeUntil"),
-      ).toEqual([MESSAGES.writeUntilPast]);
+      ).toEqual([]);
       expect(
         messagesFor(withField({ writeUntil: TODAY, openAt: TOMORROW }), "openAt")
           .length,
@@ -193,7 +194,8 @@ describe("createCapsuleSchema", () => {
 
   describe("기준 시각 주입", () => {
     it("같은 입력이라도 오늘이 바뀌면 판정이 뒤집힌다", () => {
-      const input = withField({ writeUntil: TOMORROW, openAt: "2026-08-14" });
+      const input = withField({ writeUntil: TODAY, openAt: TOMORROW });
+      // 하루 지나면 writeUntil 이 어제가 되어 거부된다.
       const dayLater = createCapsuleSchema(
         new Date(NOW.getTime() + 24 * 60 * 60 * 1000),
       );
@@ -204,7 +206,7 @@ describe("createCapsuleSchema", () => {
 
     // KST 자정 경계에서 "오늘" 이 넘어가야 한다. 8/12 23:00 KST = 14:00Z.
     it("UTC 15:00 을 넘기면 다음 날 기준으로 검증한다", () => {
-      const input = withField({ writeUntil: TOMORROW, openAt: "2026-08-14" });
+      const input = withField({ writeUntil: TODAY, openAt: TOMORROW });
 
       expect(
         createCapsuleSchema(new Date("2026-08-12T14:00:00.000Z")).safeParse(
@@ -221,15 +223,57 @@ describe("createCapsuleSchema", () => {
 });
 
 describe("toCapsulePeriod", () => {
-  it("두 날짜를 KST 00:00 의 UTC 시각으로 바꾼다", () => {
+  it("공개일은 고른 날짜 KST 00:00 이다", () => {
     const period = toCapsulePeriod({
       ...VALID,
       writeUntil: "2026-09-01",
       openAt: "2027-01-01",
     });
 
-    expect(period.writeUntil.toISOString()).toBe("2026-08-31T15:00:00.000Z");
     expect(period.openAt.toISOString()).toBe("2026-12-31T15:00:00.000Z");
+  });
+
+  // 고른 날짜가 끝날 때까지 쓸 수 있어야 하므로 다음날 00:00 에 잠근다 (이슈 #20).
+  it("작성 마감일은 고른 날짜의 다음날 KST 00:00 이다", () => {
+    const period = toCapsulePeriod({
+      ...VALID,
+      writeUntil: "2026-09-01",
+      openAt: "2027-01-01",
+    });
+
+    expect(period.writeUntil.toISOString()).toBe("2026-09-01T15:00:00.000Z");
+  });
+
+  it("고른 날짜 마지막 순간까지 WRITING 이다", () => {
+    const period = toCapsulePeriod({
+      ...VALID,
+      writeUntil: "2026-09-01",
+      openAt: "2027-01-01",
+    });
+
+    // 2026-09-01 23:59:59.999 KST = 2026-09-01T14:59:59.999Z
+    expect(
+      getCapsuleStatus(period, new Date("2026-09-01T14:59:59.999Z")),
+    ).toBe("WRITING");
+    expect(getCapsuleStatus(period, new Date("2026-09-01T15:00:00.000Z"))).toBe(
+      "LOCKED",
+    );
+  });
+
+  it("공개일이 작성 마감일 다음날이면 LOCKED 없이 열린다", () => {
+    const period = toCapsulePeriod({
+      ...VALID,
+      writeUntil: "2026-09-01",
+      openAt: "2026-09-02",
+    });
+
+    expect(period.writeUntil.getTime()).toBe(period.openAt.getTime());
+    expect(
+      getCapsuleStatus(period, new Date("2026-09-01T14:59:59.999Z")),
+    ).toBe("WRITING");
+    expect(getCapsuleStatus(period, new Date("2026-09-01T15:00:00.000Z"))).toBe(
+      "OPENED",
+    );
   });
 
   it("결과를 그대로 getCapsuleStatus 에 넘길 수 있다", () => {

@@ -1,8 +1,15 @@
+import {
+  addKstDays,
+  kstDateStringToUtc,
+  type KstDateString,
+  toKstDateString,
+} from "@/domain/kstDate";
+
 /** 캡슐의 세 가지 상태 (CLAUDE.md 핵심 규칙 1). */
 export type CapsuleStatus = "WRITING" | "LOCKED" | "OPENED";
 
 export type CapsulePeriod = {
-  /** 입력 마감 시각. 이 시각부터는 편지를 쓸 수 없다. */
+  /** 입력 마감 시각. 이 시각부터는 편지를 쓸 수 없다. 고른 날짜의 **다음날** 00:00 이다. */
   writeUntil: Date;
   /** 만료(공개) 시각. 이 시각부터 편지가 보인다. */
   openAt: Date;
@@ -22,8 +29,8 @@ export type CapsulePeriod = {
  * (supabase/migrations/20260811005629_letter_write_rpc.sql).
  * 여기서 어긋나면 "입력 가능하다고 보여줬는데 저장은 거부" 가 된다.
  *
- * `writeUntil < openAt` 순서는 capsules_period_order CHECK 제약이 보장하므로
- * 따로 검증하지 않는다.
+ * `writeUntil <= openAt` 순서는 capsules_period_order CHECK 제약이 보장하므로
+ * 따로 검증하지 않는다. 둘이 같으면 LOCKED 없이 WRITING 에서 OPENED 로 넘어간다.
  */
 export function getCapsuleStatus(
   period: CapsulePeriod,
@@ -34,4 +41,24 @@ export function getCapsuleStatus(
   if (nowMs < period.writeUntil.getTime()) return "WRITING";
   if (nowMs < period.openAt.getTime()) return "LOCKED";
   return "OPENED";
+}
+
+/**
+ * 고른 날짜 → 저장할 `writeUntil`.
+ *
+ * 고른 날짜가 **끝날 때까지** 쓸 수 있어야 하므로 다음날 KST 00:00 으로 잠근다.
+ * 그 날짜 00:00 으로 저장하면 고른 날 하루를 통째로 못 쓴다 (이슈 #20).
+ */
+export function writeUntilFromKstDate(date: KstDateString): Date {
+  return kstDateStringToUtc(addKstDays(date, 1));
+}
+
+/**
+ * 저장된 `writeUntil` → 화면에 보여줄 작성 마감일.
+ *
+ * `writeUntilFromKstDate` 의 역이다. 저장은 다음날 00:00 이지만 사용자가 고른 날짜는
+ * 그 전날이므로, 표시할 때 되돌린다.
+ */
+export function writeUntilDisplayDate(writeUntil: Date): Date {
+  return kstDateStringToUtc(addKstDays(toKstDateString(writeUntil), -1));
 }
