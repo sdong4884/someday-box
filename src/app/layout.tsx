@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
 
+import {
+  OG_DEFAULTS,
+  resolveSiteUrl,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+} from "@/lib/siteMetadata";
 import { Toaster } from "@/shared/toast/Toaster";
 import { DevTimeTravel } from "@/shared/time/DevTimeTravel";
 
@@ -7,8 +13,12 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Someday Box",
-  description: "특정 날짜에 열리는 편지를 남기는 타임 캡슐",
+  // 상대경로로 적은 og:image·og:url 은 이 값을 붙여 절대 URL 이 된다.
+  metadataBase: resolveSiteUrl(process.env),
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  // og:title·og:description 은 Next 가 위 title·description 에서 채운다.
+  openGraph: { ...OG_DEFAULTS, url: "/" },
 };
 
 export const viewport: Viewport = {
