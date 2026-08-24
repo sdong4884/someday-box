@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   getCapsuleStatus,
+  getWriteDaysLeft,
   type CapsulePeriod,
   writeUntilDisplayDate,
   writeUntilFromKstDate,
 } from "@/domain/capsule";
-import { toKstDateString } from "@/domain/kstDate";
+import { kstDateStringToUtc, toKstDateString } from "@/domain/kstDate";
 
 const WRITE_UNTIL = Date.parse("2026-09-01T00:00:00.000Z");
 const OPEN_AT = Date.parse("2026-12-25T00:00:00.000Z");
@@ -156,5 +157,56 @@ describe("writeUntilDisplayDate", () => {
     writeUntilDisplayDate(writeUntil);
 
     expect(writeUntil.getTime()).toBe(before);
+  });
+});
+
+describe("getWriteDaysLeft", () => {
+  /** 폼에서 `writeUntil` 날짜를 고른 캡슐. `openAt` 은 이 계산에 쓰이지 않는다. */
+  const picked = (writeUntil: string): CapsulePeriod => ({
+    writeUntil: writeUntilFromKstDate(writeUntil),
+    openAt: kstDateStringToUtc("2099-01-01"),
+  });
+
+  /** KST 날짜와 시:분을 UTC 시각으로. */
+  const at = (date: string, hhmm = "12:00") => {
+    const hours = Number(hhmm.slice(0, 2));
+    const minutes = Number(hhmm.slice(3, 5));
+
+    return new Date(
+      kstDateStringToUtc(date).getTime() + (hours * 60 + minutes) * 60 * 1000,
+    );
+  };
+
+  it("마감일까지 남은 날수를 센다", () => {
+    expect(getWriteDaysLeft(picked("2026-12-25"), at("2026-12-18"))).toBe(7);
+  });
+
+  it("전날이면 1 이다", () => {
+    expect(getWriteDaysLeft(picked("2026-12-25"), at("2026-12-24"))).toBe(1);
+  });
+
+  /*
+   * 이슈 #20 회귀 방어. writeUntil 은 2026-12-26 00:00 KST 로 저장되므로
+   * 그걸 그대로 빼면 마감일 당일에 1 이 나온다. 당일은 0(D-DAY)이어야 한다.
+   */
+  describe("마감일 당일", () => {
+    it.each(["00:00", "12:00", "23:59"])("%s 에도 0 이다", (hhmm) => {
+      expect(getWriteDaysLeft(picked("2026-12-25"), at("2026-12-25", hhmm))).toBe(0);
+    });
+
+    it("당일 23:59 는 아직 WRITING 이다", () => {
+      const period = picked("2026-12-25");
+
+      expect(getCapsuleStatus(period, at("2026-12-25", "23:59"))).toBe("WRITING");
+      expect(getWriteDaysLeft(period, at("2026-12-25", "23:59"))).toBe(0);
+    });
+  });
+
+  it("마감 다음날부터 음수다 — LOCKED 구간이라 화면에는 쓰이지 않는다", () => {
+    expect(getWriteDaysLeft(picked("2026-12-25"), at("2026-12-26"))).toBe(-1);
+  });
+
+  it("연말을 넘겨도 날수로 센다", () => {
+    expect(getWriteDaysLeft(picked("2027-01-01"), at("2026-12-25"))).toBe(7);
   });
 });

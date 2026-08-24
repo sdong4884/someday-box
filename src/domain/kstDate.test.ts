@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   addKstDays,
   addKstYears,
+  diffKstDays,
   formatKstDate,
   isKstDateString,
   KST_OFFSET_MS,
@@ -193,5 +194,55 @@ describe("formatKstDate", () => {
     expect(formatKstDate(date)).toBe(
       `${Number(year)}년 ${Number(month)}월 ${Number(day)}일`,
     );
+  });
+});
+
+describe("diffKstDays", () => {
+  /** KST 날짜와 그날의 시:분을 UTC 시각으로. */
+  const at = (date: string, hhmm = "00:00") => {
+    const hours = Number(hhmm.slice(0, 2));
+    const minutes = Number(hhmm.slice(3, 5));
+
+    return new Date(
+      kstDateStringToUtc(date).getTime() + (hours * 60 + minutes) * 60 * 1000,
+    );
+  };
+
+  it("같은 날이면 0 이다", () => {
+    expect(diffKstDays(at("2026-08-24", "00:00"), at("2026-08-24", "23:59"))).toBe(0);
+  });
+
+  it("하루 뒤는 1 이다", () => {
+    expect(diffKstDays(at("2026-08-24"), at("2026-08-25"))).toBe(1);
+  });
+
+  it("과거면 음수다", () => {
+    expect(diffKstDays(at("2026-08-25"), at("2026-08-24"))).toBe(-1);
+  });
+
+  // 시각이 아니라 날짜를 뺀다는 것이 이 함수의 전부다.
+  it("23:59 에서 다음날 00:01 은 1분 차이지만 1 이다", () => {
+    expect(diffKstDays(at("2026-08-24", "23:59"), at("2026-08-25", "00:01"))).toBe(1);
+  });
+
+  it("00:01 에서 같은 날 23:59 는 거의 하루지만 0 이다", () => {
+    expect(diffKstDays(at("2026-08-24", "00:01"), at("2026-08-24", "23:59"))).toBe(0);
+  });
+
+  it("월·연을 넘어도 날수로 센다", () => {
+    expect(diffKstDays(at("2026-12-25"), at("2027-01-01"))).toBe(7);
+  });
+
+  it("윤일을 하루로 센다", () => {
+    expect(diffKstDays(at("2028-02-28"), at("2028-03-01"))).toBe(2);
+  });
+
+  // KST 자정은 UTC 15:00 이다. UTC 기준으로 자르면 여기서 하루가 어긋난다.
+  it("UTC 로는 날이 바뀌었지만 KST 로는 같은 날이면 0 이다", () => {
+    const utcMidnightCrossed = new Date("2026-08-24T14:00:00.000Z"); // KST 23:00
+    const nextUtcDay = new Date("2026-08-24T15:00:00.000Z"); // KST 다음날 00:00
+
+    expect(diffKstDays(utcMidnightCrossed, utcMidnightCrossed)).toBe(0);
+    expect(diffKstDays(utcMidnightCrossed, nextUtcDay)).toBe(1);
   });
 });
