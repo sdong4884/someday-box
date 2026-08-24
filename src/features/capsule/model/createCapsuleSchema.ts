@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { CapsulePeriod } from "@/domain/capsule";
+import { type CapsulePeriod, writeUntilFromKstDate } from "@/domain/capsule";
 import {
   addKstYears,
   isKstDateString,
@@ -34,7 +34,7 @@ export const CAPSULE_FORM_MESSAGES = {
   titleTooLong: `제목은 ${CAPSULE_TITLE_MAX_LENGTH}자까지 쓸 수 있어요.`,
   writeUntilFormat: "작성 마감일을 선택해 주세요.",
   openAtFormat: "공개일을 선택해 주세요.",
-  writeUntilPast: "작성 마감일은 내일 이후로 정해 주세요.",
+  writeUntilPast: "작성 마감일은 오늘 이후로 정해 주세요.",
   openAtPast: "공개일은 내일 이후로 정해 주세요.",
   periodOrder: "공개일은 작성 마감일보다 뒤여야 해요.",
   openAtTooFar: `공개일은 ${CAPSULE_OPEN_AT_MAX_YEARS}년 이내로 정해 주세요.`,
@@ -79,7 +79,8 @@ export function createCapsuleSchema(now: Date) {
       const hasWriteUntil = isKstDateString(values.writeUntil);
       const hasOpenAt = isKstDateString(values.openAt);
 
-      if (hasWriteUntil && values.writeUntil <= today) {
+      // 오늘을 골라도 된다 — 저장은 내일 00:00 이라 "오늘까지 쓰기" 가 성립한다.
+      if (hasWriteUntil && values.writeUntil < today) {
         ctx.addIssue({
           code: "custom",
           path: ["writeUntil"],
@@ -126,7 +127,8 @@ export type CreateCapsuleInput = z.infer<CreateCapsuleSchema>;
  */
 export function toCapsulePeriod(input: CreateCapsuleInput): CapsulePeriod {
   return {
-    writeUntil: kstDateStringToUtc(input.writeUntil),
+    // 고른 날짜가 끝날 때까지 쓸 수 있어야 해서 다음날 00:00 으로 잠근다.
+    writeUntil: writeUntilFromKstDate(input.writeUntil),
     openAt: kstDateStringToUtc(input.openAt),
   };
 }

@@ -97,14 +97,14 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
   const today = toKstDateString(now);
   const openAtLimit = addKstYears(today, CAPSULE_OPEN_AT_MAX_YEARS);
 
-  const writeUntilMin = addKstDays(today, 1);
+  const writeUntilMin = today;
   const writeUntilMax = isKstDateString(openAt)
     ? addKstDays(openAt, -1)
     : addKstDays(openAtLimit, -1);
 
   const openAtMin = isKstDateString(writeUntil)
     ? addKstDays(writeUntil, 1)
-    : addKstDays(today, 2);
+    : addKstDays(today, 1);
   const openAtMax = openAtLimit;
 
   const titleAria = fieldAria({ id: "title", error: errors.title?.message });

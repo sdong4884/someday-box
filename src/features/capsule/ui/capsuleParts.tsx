@@ -1,4 +1,4 @@
-import type { CapsuleStatus } from "@/domain/capsule";
+import { type CapsuleStatus, writeUntilDisplayDate } from "@/domain/capsule";
 import { formatKstDate } from "@/domain/kstDate";
 import { getCapsulePeriod } from "@/features/capsule/model/capsulePeriod";
 import type { CapsulePublic } from "@/lib/dbColumns";
@@ -22,7 +22,7 @@ export function CapsuleSummary({
 
       {/* 라벨 용어는 docs/decisions.md §6 을 따른다 — `만료일` 이 아니라 `공개일`. */}
       <dl className="flex flex-col gap-2">
-        <DateRow label="작성 마감일" date={period.writeUntil} />
+        <DateRow label="작성 마감일" date={writeUntilDisplayDate(period.writeUntil)} />
         <DateRow label="공개일" date={period.openAt} />
       </dl>
     </div>
