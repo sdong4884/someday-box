@@ -37,7 +37,7 @@ export default async function CapsulePage({ params }: PageProps<"/c/[slug]">) {
   if (!capsule) notFound();
 
   return (
-    <main className="flex flex-1 flex-col px-5 py-6">
+    <main className="flex flex-1 flex-col">
       <CapsuleScreen capsule={capsule} />
     </main>
   );

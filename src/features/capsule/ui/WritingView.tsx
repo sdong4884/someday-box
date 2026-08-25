@@ -1,5 +1,7 @@
-import Link from "next/link";
+"use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import { getWriteDaysLeft, writeUntilDisplayDate } from "@/domain/capsule";
 import { formatKstDate } from "@/domain/kstDate";
 import { useCapsuleSummary } from "@/features/capsule/api/useCapsuleSummary";
@@ -9,6 +11,11 @@ import {
   CapsuleHeader,
   EnvelopeIcon,
 } from "@/features/capsule/ui/capsuleParts";
+import { EditLetterForm } from "@/features/letter/ui/EditLetterForm";
+import {
+  PasswordPrompt,
+  type UnlockedLetter,
+} from "@/features/letter/ui/PasswordPrompt";
 import type { CapsulePublic } from "@/lib/dbColumns";
 
 export function WritingView({
@@ -20,8 +27,21 @@ export function WritingView({
 }) {
   const period = getCapsulePeriod(capsule);
 
+  // 비밀번호가 사는 유일한 곳. 언마운트되면 함께 사라진다.
+  const [unlocked, setUnlocked] = useState<UnlockedLetter | null>(null);
+
+  if (unlocked) {
+    return (
+      <EditLetterForm
+        slug={capsule.slug}
+        letter={unlocked}
+        onClose={() => setUnlocked(null)}
+      />
+    );
+  }
+
   return (
-    <div className="flex flex-1 flex-col gap-7">
+    <div className="flex flex-1 flex-col gap-7 px-5 py-6">
       <CapsuleHeader capsule={capsule} />
 
       <DeadlineCard
@@ -29,7 +49,7 @@ export function WritingView({
         deadline={writeUntilDisplayDate(period.writeUntil)}
       />
 
-      <Participation slug={capsule.slug} />
+      <Participation slug={capsule.slug} onUnlock={setUnlocked} />
 
       <Link
         href={`/c/${capsule.slug}/write`}
@@ -66,8 +86,15 @@ function DeadlineCard({
   );
 }
 
-function Participation({ slug }: { slug: string }) {
+function Participation({
+  slug,
+  onUnlock,
+}: {
+  slug: string;
+  onUnlock: (letter: UnlockedLetter) => void;
+}) {
   const { data, isPending, isError } = useCapsuleSummary(slug);
+  const [pending, setPending] = useState<string | null>(null);
 
   if (isError) return null;
 
@@ -95,14 +122,29 @@ function Participation({ slug }: { slug: string }) {
       </p>
       <ul className="flex flex-wrap gap-2">
         {data.nicknames.map((nickname) => (
-          <li
-            key={nickname}
-            className="rounded-pill bg-surface px-3 py-1.5 text-xs text-ink-muted"
-          >
-            {nickname}
+          <li key={nickname}>
+            <button
+              type="button"
+              onClick={() => setPending(nickname)}
+              className="rounded-pill bg-surface px-3 py-1.5 text-xs text-ink-muted transition-opacity active:opacity-70"
+            >
+              {nickname}
+            </button>
           </li>
         ))}
       </ul>
+
+      {pending && (
+        <PasswordPrompt
+          slug={slug}
+          nickname={pending}
+          onUnlock={(letter) => {
+            setPending(null);
+            onUnlock(letter);
+          }}
+          onClose={() => setPending(null)}
+        />
+      )}
     </section>
   );
 }

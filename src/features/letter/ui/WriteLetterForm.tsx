@@ -10,14 +10,14 @@ import { createLetter } from "@/features/letter/api/createLetter";
 import { toCreateLetterFieldError } from "@/features/letter/model/createLetterError";
 import {
   createLetterSchema,
-  LETTER_CONTENT_MAX_LENGTH,
   LETTER_NICKNAME_MAX_LENGTH,
   LETTER_PASSWORD_MAX_LENGTH,
   type CreateLetterInput,
 } from "@/features/letter/model/createLetterSchema";
 import {
-  CharCounter,
+  ContentField,
   InfoBanner,
+  LOSS_WARNING,
 } from "@/features/letter/ui/letterParts";
 import type { CapsulePublic } from "@/lib/dbColumns";
 import { getRpcErrorMessage } from "@/lib/rpcError";
@@ -26,11 +26,8 @@ import {
   Field,
   INPUT_CLASS,
   ScreenHeader,
-  TEXTAREA_CLASS,
   fieldAria,
 } from "@/shared/ui/formParts";
-
-export const LOSS_WARNING = "닉네임과 비밀번호를 잊으면 편지를 수정할 수 없어요.";
 
 export function WriteLetterForm({ capsule }: { capsule: CapsulePublic }) {
   const router = useRouter();
@@ -83,11 +80,6 @@ export function WriteLetterForm({ capsule }: { capsule: CapsulePublic }) {
     id: "password",
     error: errors.password?.message,
   });
-  const contentAria = fieldAria({
-    id: "content",
-    error: errors.content?.message,
-  });
-
   return (
     <form
       onSubmit={handleSubmit((values) => mutation.mutate(values))}
@@ -130,19 +122,11 @@ export function WriteLetterForm({ capsule }: { capsule: CapsulePublic }) {
           />
         </Field>
 
-        <Field id="content" label="내용" error={errors.content?.message}>
-          <textarea
-            {...register("content")}
-            {...contentAria}
-            placeholder="마음을 담아 적어주세요"
-            maxLength={LETTER_CONTENT_MAX_LENGTH}
-            className={TEXTAREA_CLASS}
-          />
-          <CharCounter
-            length={content.length}
-            max={LETTER_CONTENT_MAX_LENGTH}
-          />
-        </Field>
+        <ContentField
+          register={register("content")}
+          length={content.length}
+          error={errors.content?.message}
+        />
       </div>
     </form>
   );

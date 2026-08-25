@@ -9,11 +9,12 @@ import {
   LETTER_NICKNAME_MAX_LENGTH,
   LETTER_PASSWORD_MAX_LENGTH,
 } from "@/features/letter/model/createLetterSchema";
-import { CharCounter, InfoBanner } from "@/features/letter/ui/letterParts";
 import {
+  CharCounter,
+  InfoBanner,
   LOSS_WARNING,
-  WriteLetterForm,
-} from "@/features/letter/ui/WriteLetterForm";
+} from "@/features/letter/ui/letterParts";
+import { WriteLetterForm } from "@/features/letter/ui/WriteLetterForm";
 import type { CapsulePublic } from "@/lib/dbColumns";
 import { useNow } from "@/shared/time/useNow";
 import {

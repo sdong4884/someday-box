@@ -17,7 +17,7 @@ export function CapsuleSummary({
   const period = getCapsulePeriod(capsule);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 px-5 py-6">
       <StatusLabel status={status} />
 
       <h1 className="text-4xl font-bold tracking-[-0.01em] text-ink">

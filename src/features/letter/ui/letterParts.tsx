@@ -1,3 +1,15 @@
+import type { UseFormRegisterReturn } from "react-hook-form";
+import {
+  Field,
+  INPUT_CLASS,
+  TEXTAREA_CLASS,
+  fieldAria,
+} from "@/shared/ui/formParts";
+import { LETTER_CONTENT_MAX_LENGTH } from "@/features/letter/model/createLetterSchema";
+
+export const LOSS_WARNING =
+  "닉네임과 비밀번호를 잊으면 편지를 수정할 수 없어요.";
+
 export function InfoBanner({ children }: { children: string }) {
   return (
     <p className="flex items-start gap-2 rounded-card bg-surface px-3.5 py-3 text-xs leading-[1.6] text-ink-muted">
@@ -31,5 +43,53 @@ export function CharCounter({ length, max }: { length: number; max: number }) {
     <p aria-hidden="true" className="text-right text-xs text-ink-dim">
       {length}/{max}
     </p>
+  );
+}
+
+/** 작성·수정 폼이 같은 내용 칸을 그린다. */
+export function ContentField({
+  register,
+  length,
+  error,
+}: {
+  register: UseFormRegisterReturn;
+  length: number;
+  error?: string;
+}) {
+  return (
+    <Field id="content" label="내용" error={error}>
+      <textarea
+        {...register}
+        {...fieldAria({ id: "content", error })}
+        placeholder="마음을 담아 적어주세요"
+        maxLength={LETTER_CONTENT_MAX_LENGTH}
+        className={TEXTAREA_CLASS}
+      />
+      <CharCounter length={length} max={LETTER_CONTENT_MAX_LENGTH} />
+    </Field>
+  );
+}
+
+/** 값이 박힌 채 못 고치는 칸. 수정 화면의 닉네임·비밀번호가 쓴다. */
+export function ReadonlyField({
+  id,
+  label,
+  value,
+}: {
+  id: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <Field id={id} label={label}>
+      <input
+        {...fieldAria({ id })}
+        type="text"
+        value={value}
+        readOnly
+        disabled
+        className={INPUT_CLASS}
+      />
+    </Field>
   );
 }
