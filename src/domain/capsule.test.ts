@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   getCapsuleStatus,
+  getOpenDaysLeft,
   getWriteDaysLeft,
   type CapsulePeriod,
   writeUntilDisplayDate,
@@ -208,5 +209,66 @@ describe("getWriteDaysLeft", () => {
 
   it("연말을 넘겨도 날수로 센다", () => {
     expect(getWriteDaysLeft(picked("2027-01-01"), at("2026-12-25"))).toBe(7);
+  });
+});
+
+describe("getOpenDaysLeft", () => {
+  /** 폼에서 두 날짜를 고른 캡슐. open_at 은 고른 날짜 00:00 그대로다. */
+  const picked = (writeUntil: string, openAt: string): CapsulePeriod => ({
+    writeUntil: writeUntilFromKstDate(writeUntil),
+    openAt: kstDateStringToUtc(openAt),
+  });
+
+  const at = (date: string, hhmm = "12:00") => {
+    const hours = Number(hhmm.slice(0, 2));
+    const minutes = Number(hhmm.slice(3, 5));
+
+    return new Date(
+      kstDateStringToUtc(date).getTime() + (hours * 60 + minutes) * 60 * 1000,
+    );
+  };
+
+  const PERIOD = picked("2026-12-25", "2027-01-01");
+
+  it("공개일까지 남은 날수를 센다", () => {
+    expect(getOpenDaysLeft(PERIOD, at("2026-12-25"))).toBe(7);
+  });
+
+  it("전날이면 1 이다", () => {
+    expect(getOpenDaysLeft(PERIOD, at("2026-12-31"))).toBe(1);
+  });
+
+  /*
+   * write_until 과 달리 open_at 은 고른 날짜 00:00 그대로 저장된다. 변환을 끼우면
+   * 여기서 하루가 어긋난다.
+   */
+  it("고른 공개일을 그대로 기준 삼는다 — 하루 밀리지 않는다", () => {
+    expect(getOpenDaysLeft(picked("2026-12-25", "2026-12-26"), at("2026-12-25"))).toBe(1);
+  });
+
+  describe("LOCKED 구간과 경계가 맞는다", () => {
+    it("공개일 전날 23:59 는 LOCKED 이고 D-1 이다", () => {
+      const now = at("2026-12-31", "23:59");
+
+      expect(getCapsuleStatus(PERIOD, now)).toBe("LOCKED");
+      expect(getOpenDaysLeft(PERIOD, now)).toBe(1);
+    });
+
+    // 0 이 되는 순간 이미 OPENED 라 LOCKED 화면에 D-DAY 는 나타나지 않는다.
+    it("공개일 00:00 은 0 이지만 그때는 이미 OPENED 다", () => {
+      const now = at("2027-01-01", "00:00");
+
+      expect(getOpenDaysLeft(PERIOD, now)).toBe(0);
+      expect(getCapsuleStatus(PERIOD, now)).toBe("OPENED");
+    });
+
+    it("LOCKED 인 모든 날에 1 이상이다", () => {
+      for (const date of ["2026-12-26", "2026-12-28", "2026-12-31"]) {
+        const now = at(date);
+
+        expect(getCapsuleStatus(PERIOD, now)).toBe("LOCKED");
+        expect(getOpenDaysLeft(PERIOD, now)).toBeGreaterThanOrEqual(1);
+      }
+    });
   });
 });
