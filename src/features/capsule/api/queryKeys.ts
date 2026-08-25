@@ -10,4 +10,5 @@
 export const capsuleKeys = {
   all: ["capsule"] as const,
   summary: (slug: string) => [...capsuleKeys.all, slug, "summary"] as const,
+  letters: (slug: string) => [...capsuleKeys.all, slug, "letters"] as const,
 };
