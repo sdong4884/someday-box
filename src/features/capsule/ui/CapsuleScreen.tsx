@@ -22,7 +22,7 @@ export function CapsuleScreen({ capsule }: { capsule: CapsulePublic }) {
       // 시각은 여기서 한 번만 읽어 내려보낸다.
       return <WritingView capsule={capsule} now={now} />;
     case "LOCKED":
-      return <LockedView capsule={capsule} />;
+      return <LockedView capsule={capsule} now={now} />;
     case "OPENED":
       return <OpenedView capsule={capsule} />;
   }

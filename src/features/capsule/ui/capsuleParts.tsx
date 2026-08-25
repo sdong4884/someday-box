@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { type CapsuleStatus, writeUntilDisplayDate } from "@/domain/capsule";
 import { formatKstDate } from "@/domain/kstDate";
 import { getCapsulePeriod } from "@/features/capsule/model/capsulePeriod";
@@ -153,6 +154,84 @@ export function EnvelopeIcon({ className }: { className?: string }) {
     >
       <rect x="3" y="5.5" width="18" height="13" rx="2" />
       <path d="m3.8 7 8.2 6 8.2-6" />
+    </svg>
+  );
+}
+
+export function CountdownCard({
+  icon,
+  label,
+  dday,
+  caption,
+}: {
+  icon: ReactNode;
+  label: string;
+  dday: string;
+  caption: string;
+}) {
+  return (
+    <section className="flex flex-col items-center gap-2 rounded-card border border-line-strong bg-surface px-5 py-7">
+      <span className="mb-1 flex size-12 items-center justify-center rounded-full bg-accent-deep">
+        {icon}
+      </span>
+
+      <p className="text-xs font-medium text-accent-soft">{label}</p>
+
+      <p className="text-4xl font-bold tracking-[-0.01em] text-ink">{dday}</p>
+
+      <p className="text-xs text-ink-dim">{caption}</p>
+    </section>
+  );
+}
+
+const BADGE_CLASS = "rounded-pill bg-surface px-3 py-1.5 text-xs text-ink-muted";
+
+/**
+ * `onSelect` 가 없으면 `<span>` 이다. disabled 버튼은 스크린 리더가 "사용 불가 버튼" 으로
+ * 읽어 언젠가 눌릴 수 있는 것처럼 들린다 — 잠긴 캡슐의 닉네임은 라벨이지 조작 대상이 아니다.
+ */
+export function NicknameList({
+  nicknames,
+  onSelect,
+}: {
+  nicknames: string[];
+  onSelect?: (nickname: string) => void;
+}) {
+  return (
+    <ul className="flex flex-wrap gap-2">
+      {nicknames.map((nickname) => (
+        <li key={nickname}>
+          {onSelect ? (
+            <button
+              type="button"
+              onClick={() => onSelect(nickname)}
+              className={`${BADGE_CLASS} transition-opacity active:opacity-70`}
+            >
+              {nickname}
+            </button>
+          ) : (
+            <span className={`${BADGE_CLASS} block`}>{nickname}</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function LockIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
+      <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
     </svg>
   );
 }

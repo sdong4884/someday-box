@@ -77,3 +77,9 @@ export function writeUntilDisplayDate(writeUntil: Date): Date {
 export function getWriteDaysLeft(period: CapsulePeriod, now: Date): number {
   return diffKstDays(now, writeUntilDisplayDate(period.writeUntil));
 }
+
+// open_at 은 고른 날짜 00:00 그대로다. write_until 만 다음날이라(이슈 #20) 여기에
+// writeUntilDisplayDate 같은 변환을 끼우면 하루가 어긋난다.
+export function getOpenDaysLeft(period: CapsulePeriod, now: Date): number {
+  return diffKstDays(now, period.openAt);
+}
