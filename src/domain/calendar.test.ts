@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { buildCapsuleIcs, type CapsuleIcsInput } from "@/domain/calendar";
+import {
+  buildCapsuleIcs,
+  buildGoogleCalendarUrl,
+  type CapsuleIcsInput,
+} from "@/domain/calendar";
 
 /** KST 2026-09-01 00:00 = UTC 2026-08-31 15:00. */
 const OPEN_AT = new Date("2026-08-31T15:00:00.000Z");
@@ -213,6 +217,90 @@ describe("buildCapsuleIcs", () => {
       expect(lines.indexOf("END:VALARM")).toBeLessThan(
         lines.indexOf("END:VEVENT"),
       );
+    });
+  });
+});
+
+describe("buildGoogleCalendarUrl", () => {
+  const GOOGLE = {
+    title: BASE.title,
+    openAt: BASE.openAt,
+    url: BASE.url,
+  };
+
+  const paramsOf = (href: string) =>
+    Object.fromEntries(
+      href
+        .slice(href.indexOf("?") + 1)
+        .split("&")
+        .map((pair) => {
+          const [key, value] = pair.split("=");
+          return [key, value ?? ""];
+        }),
+    );
+
+  it("구글 캘린더 일정 추가 화면을 가리킨다", () => {
+    expect(buildGoogleCalendarUrl(GOOGLE)).toContain(
+      "https://calendar.google.com/calendar/render?",
+    );
+  });
+
+  it("action 이 TEMPLATE 이다", () => {
+    expect(paramsOf(buildGoogleCalendarUrl(GOOGLE)).action).toBe("TEMPLATE");
+  });
+
+  it("text 는 .ics 의 SUMMARY 와 같은 문구다", () => {
+    const text = decodeURIComponent(paramsOf(buildGoogleCalendarUrl(GOOGLE)).text);
+
+    expect(text).toBe("졸업 10주년 상자가 열리는 날");
+    expect(linesOf(build())).toContain(`SUMMARY:${text}`);
+  });
+
+  /*
+   * 두 경로가 갈라지면 같은 캡슐이 캘린더마다 다른 시각에 잡힌다.
+   */
+  it("dates 가 .ics 의 DTSTART·DTEND 와 같은 값이다", () => {
+    const dates = decodeURIComponent(paramsOf(buildGoogleCalendarUrl(GOOGLE)).dates);
+
+    expect(dates).toBe("20260831T150000Z/20260831T160000Z");
+
+    const [start, end] = dates.split("/");
+    expect(linesOf(build())).toContain(`DTSTART:${start}`);
+    expect(linesOf(build())).toContain(`DTEND:${end}`);
+  });
+
+  it("details 에 url 이 들어간다", () => {
+    const details = decodeURIComponent(
+      paramsOf(buildGoogleCalendarUrl(GOOGLE)).details,
+    );
+
+    expect(details).toContain(BASE.url);
+  });
+
+  describe("퍼센트 인코딩", () => {
+    it("한글과 공백이 인코딩된다", () => {
+      const raw = paramsOf(buildGoogleCalendarUrl(GOOGLE)).text;
+
+      expect(raw).not.toContain(" ");
+      expect(raw).not.toContain("졸업");
+      expect(raw).toContain("%20");
+    });
+
+    it("쉼표가 있어도 되돌리면 원문이다", () => {
+      const href = buildGoogleCalendarUrl({ ...GOOGLE, title: "2027년, 우리에게" });
+
+      expect(decodeURIComponent(paramsOf(href).text)).toBe(
+        "2027년, 우리에게 상자가 열리는 날",
+      );
+    });
+
+    // & 나 = 가 그대로 새면 파라미터가 쪼개져 뒤 값이 통째로 날아간다.
+    it("앰퍼샌드·등호가 파라미터를 깨뜨리지 않는다", () => {
+      const href = buildGoogleCalendarUrl({ ...GOOGLE, title: "a&b=c" });
+      const params = paramsOf(href);
+
+      expect(Object.keys(params)).toEqual(["action", "text", "dates", "details"]);
+      expect(decodeURIComponent(params.text)).toBe("a&b=c 상자가 열리는 날");
     });
   });
 });

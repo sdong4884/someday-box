@@ -16,9 +16,11 @@ import type { CapsulePublic } from "@/lib/dbColumns";
 export function LockedView({
   capsule,
   now,
+  capsuleUrl,
 }: {
   capsule: CapsulePublic;
   now: Date;
+  capsuleUrl: string;
 }) {
   const period = getCapsulePeriod(capsule);
 
@@ -31,6 +33,10 @@ export function LockedView({
         label="공개까지"
         dday={formatDdayLabel(getOpenDaysLeft(period, now))}
         caption={`${formatKstDate(period.openAt)} 공개`}
+        slug={capsule.slug}
+        title={capsule.title}
+        openAt={period.openAt}
+        capsuleUrl={capsuleUrl}
       />
 
       <LockedParticipation slug={capsule.slug} />

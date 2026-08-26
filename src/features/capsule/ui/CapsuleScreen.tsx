@@ -9,7 +9,13 @@ import { WritingView } from "@/features/capsule/ui/WritingView";
 import type { CapsulePublic } from "@/lib/dbColumns";
 import { useNow } from "@/shared/time/useNow";
 
-export function CapsuleScreen({ capsule }: { capsule: CapsulePublic }) {
+export function CapsuleScreen({
+  capsule,
+  capsuleUrl,
+}: {
+  capsule: CapsulePublic;
+  capsuleUrl: string;
+}) {
   const now = useNow();
 
   /** 마운트 전 null. 이 분기를 지우면 서버 HTML 과 어긋난다 (shared/time/nowStore.ts). */
@@ -27,9 +33,9 @@ export function CapsuleScreen({ capsule }: { capsule: CapsulePublic }) {
   switch (status) {
     case "WRITING":
       // 시각은 여기서 한 번만 읽어 내려보낸다.
-      return <WritingView capsule={capsule} now={now} />;
+      return <WritingView capsule={capsule} now={now} capsuleUrl={capsuleUrl} />;
     case "LOCKED":
-      return <LockedView capsule={capsule} now={now} />;
+      return <LockedView capsule={capsule} now={now} capsuleUrl={capsuleUrl} />;
     case "OPENED":
       return <OpenedView capsule={capsule} />;
   }
