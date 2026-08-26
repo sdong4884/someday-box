@@ -102,3 +102,32 @@ export function buildCapsuleIcs(input: CapsuleIcsInput): string {
 
   return lines.map(foldLine).join(CRLF) + CRLF;
 }
+
+const GOOGLE_RENDER_URL = "https://calendar.google.com/calendar/render";
+
+/**
+ * 구글 캘린더의 "일정 추가" 화면을 미리 채워 여는 링크. 저장은 사용자가 눌러야 한다 —
+ * 확인 없이 남의 캘린더에 쓰려면 OAuth 가 필요하다.
+ *
+ * dates 는 .ics 의 DTSTART/DTEND 와 같은 값을 쓴다. 두 경로가 갈라지면 같은 캡슐이
+ * 캘린더마다 다른 시각에 잡힌다.
+ */
+export function buildGoogleCalendarUrl(input: {
+  title: string;
+  openAt: Date;
+  url: string;
+}): string {
+  const { title, openAt, url } = input;
+
+  const start = formatIcsUtc(openAt);
+  const end = formatIcsUtc(new Date(openAt.getTime() + HOUR_MS));
+
+  const params = [
+    "action=TEMPLATE",
+    `text=${encodeURIComponent(`${title} 상자가 열리는 날`)}`,
+    `dates=${start}%2F${end}`,
+    `details=${encodeURIComponent(`${title} 상자가 열렸어요. 링크에서 편지를 확인해 보세요.\n${url}`)}`,
+  ];
+
+  return `${GOOGLE_RENDER_URL}?${params.join("&")}`;
+}

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+
+import { buildGoogleCalendarUrl } from "@/domain/calendar";
 import type { CapsulePublic } from "@/lib/dbColumns";
 import { showToast } from "@/shared/toast/toastStore";
 
@@ -109,24 +111,121 @@ export function CountdownCard({
   label,
   dday,
   caption,
+  slug,
+  title,
+  openAt,
+  capsuleUrl,
 }: {
   icon: ReactNode;
   label: string;
   dday: string;
   caption: string;
+  slug: string;
+  title: string;
+  openAt: Date;
+  capsuleUrl: string;
 }) {
   return (
-    <section className="flex flex-col items-center gap-2 rounded-card border border-line-strong bg-surface px-5 py-7">
-      <span className="mb-1 flex size-12 items-center justify-center rounded-full bg-accent-deep">
-        {icon}
-      </span>
+    <section className="flex flex-col rounded-card border border-line-strong bg-surface">
+      <div className="flex flex-col items-center gap-2 px-5 py-7">
+        <span className="mb-1 flex size-12 items-center justify-center rounded-full bg-accent-deep">
+          {icon}
+        </span>
 
-      <p className="text-xs font-medium text-accent-soft">{label}</p>
+        <p className="text-xs font-medium text-accent-soft">{label}</p>
 
-      <p className="text-4xl font-bold tracking-[-0.01em] text-ink">{dday}</p>
+        <p className="text-4xl font-bold tracking-[-0.01em] text-ink">{dday}</p>
 
-      <p className="text-xs text-ink-dim">{caption}</p>
+        <p className="text-xs text-ink-dim">{caption}</p>
+      </div>
+
+      <CalendarSaveRow
+        slug={slug}
+        title={title}
+        openAt={openAt}
+        capsuleUrl={capsuleUrl}
+      />
     </section>
+  );
+}
+
+const SAVE_LINK_CLASS =
+  "flex min-h-control flex-1 items-center justify-center gap-1.5 text-xs text-accent-soft transition-opacity active:opacity-70";
+
+/**
+ * 둘 다 평범한 `<a>` 다. 웹뷰에서 `window.open` 이 막히는 경우가 있어 링크가 가장 튼튼하다.
+ *
+ * 구글 링크는 일정 추가 화면을 미리 채워 열 뿐이고 저장은 사용자가 누른다. `.ics` 는
+ * 아이폰·삼성·아웃룩까지 받는 범용 경로라 둘을 함께 둔다.
+ */
+function CalendarSaveRow({
+  slug,
+  title,
+  openAt,
+  capsuleUrl,
+}: {
+  slug: string;
+  title: string;
+  openAt: Date;
+  capsuleUrl: string;
+}) {
+  return (
+    <div className="flex items-stretch border-t border-line">
+      <a
+        href={buildGoogleCalendarUrl({ title, openAt, url: capsuleUrl })}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={SAVE_LINK_CLASS}
+      >
+        <CalendarPlusIcon />
+        구글 캘린더
+      </a>
+
+      <span aria-hidden="true" className="my-2 w-px bg-line" />
+
+      <a
+        href={`/api/c/${slug}/calendar.ics`}
+        className={SAVE_LINK_CLASS}
+      >
+        <DownloadIcon />
+        캘린더 파일
+      </a>
+    </div>
+  );
+}
+
+function CalendarPlusIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="size-4 shrink-0"
+    >
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="size-4 shrink-0"
+    >
+      <path d="M12 4v11M8 11.5l4 4 4-4M5 19.5h14" />
+    </svg>
   );
 }
 

@@ -23,9 +23,11 @@ import type { CapsulePublic } from "@/lib/dbColumns";
 export function WritingView({
   capsule,
   now,
+  capsuleUrl,
 }: {
   capsule: CapsulePublic;
   now: Date;
+  capsuleUrl: string;
 }) {
   const period = getCapsulePeriod(capsule);
 
@@ -51,6 +53,10 @@ export function WritingView({
         label="작성 마감까지"
         dday={formatDdayLabel(getWriteDaysLeft(period, now))}
         caption={`${formatKstDate(writeUntilDisplayDate(period.writeUntil))}까지`}
+        slug={capsule.slug}
+        title={capsule.title}
+        openAt={period.openAt}
+        capsuleUrl={capsuleUrl}
       />
 
       <Participation slug={capsule.slug} onUnlock={setUnlocked} />

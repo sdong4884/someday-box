@@ -5,7 +5,7 @@ import { getCapsuleBySlug } from "@/features/capsule/api/getCapsule";
 import { buildCapsuleDescription } from "@/features/capsule/model/capsuleMetadata";
 import { getCapsulePeriod } from "@/features/capsule/model/capsulePeriod";
 import { CapsuleScreen } from "@/features/capsule/ui/CapsuleScreen";
-import { OG_DEFAULTS } from "@/lib/siteMetadata";
+import { OG_DEFAULTS, resolveSiteUrl } from "@/lib/siteMetadata";
 
 export async function generateMetadata({
   params,
@@ -38,7 +38,10 @@ export default async function CapsulePage({ params }: PageProps<"/c/[slug]">) {
 
   return (
     <main className="flex flex-1 flex-col">
-      <CapsuleScreen capsule={capsule} />
+      <CapsuleScreen
+        capsule={capsule}
+        capsuleUrl={new URL(`/c/${slug}`, resolveSiteUrl(process.env)).toString()}
+      />
     </main>
   );
 }
