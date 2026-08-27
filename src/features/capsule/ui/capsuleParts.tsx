@@ -243,7 +243,7 @@ export function NicknameList({
   onSelect?: (nickname: string) => void;
 }) {
   return (
-    <ul className="flex flex-wrap gap-2">
+    <ul className="flex flex-wrap justify-center gap-2">
       {nicknames.map((nickname) => (
         <li key={nickname}>
           {onSelect ? (
