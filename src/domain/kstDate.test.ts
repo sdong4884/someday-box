@@ -5,6 +5,7 @@ import {
   addKstYears,
   diffKstDays,
   formatKstDate,
+  formatKstDateShort,
   isKstDateString,
   KST_OFFSET_MS,
   kstDateStringToUtc,
@@ -244,5 +245,37 @@ describe("diffKstDays", () => {
 
     expect(diffKstDays(utcMidnightCrossed, utcMidnightCrossed)).toBe(0);
     expect(diffKstDays(utcMidnightCrossed, nextUtcDay)).toBe(1);
+  });
+});
+
+describe("formatKstDateShort", () => {
+  it("연도를 두 자리로 줄인다", () => {
+    expect(formatKstDateShort(kstDateStringToUtc("2026-12-25"))).toBe("26.12.25");
+  });
+
+  it("월·일에 0 을 채우지 않는다", () => {
+    expect(formatKstDateShort(kstDateStringToUtc("2027-01-01"))).toBe("27.1.1");
+  });
+
+  // KST 자정은 UTC 15:00 이다. UTC 로 자르면 하루 어긋난다.
+  it("KST 기준 날짜를 쓴다", () => {
+    expect(formatKstDateShort(new Date("2026-12-31T15:00:00.000Z"))).toBe("27.1.1");
+  });
+
+  it("2000년대 초반도 두 자리다", () => {
+    expect(formatKstDateShort(kstDateStringToUtc("2009-03-07"))).toBe("09.3.7");
+  });
+
+  it("formatKstDate 와 같은 날을 가리킨다", () => {
+    const date = kstDateStringToUtc("2026-08-27");
+
+    expect(formatKstDate(date)).toBe("2026년 8월 27일");
+    expect(formatKstDateShort(date)).toBe("26.8.27");
+  });
+
+  it("긴 표기보다 짧다", () => {
+    const date = kstDateStringToUtc("2026-12-25");
+
+    expect(formatKstDateShort(date).length).toBeLessThan(formatKstDate(date).length);
   });
 });

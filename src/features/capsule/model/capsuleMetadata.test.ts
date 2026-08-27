@@ -15,25 +15,25 @@ function pick(writeUntil: string, openAt: string): CapsulePeriod {
 describe("buildCapsuleDescription", () => {
   it("고른 날짜를 그대로 적는다", () => {
     expect(buildCapsuleDescription(pick("2026-12-25", "2027-01-01"))).toBe(
-      "2026년 12월 25일까지 편지를 남길 수 있어요. 2027년 1월 1일에 열려요.",
+      "26.12.25까지 남긴 편지가 27.1.1에 열려요.",
     );
   });
 
   it("월·일에 0 을 채우지 않는다", () => {
     expect(buildCapsuleDescription(pick("2027-01-05", "2027-02-09"))).toBe(
-      "2027년 1월 5일까지 편지를 남길 수 있어요. 2027년 2월 9일에 열려요.",
+      "27.1.5까지 남긴 편지가 27.2.9에 열려요.",
     );
   });
 
   it("연말을 넘겨도 고른 날짜가 그대로 나온다", () => {
     expect(buildCapsuleDescription(pick("2026-12-31", "2027-01-01"))).toBe(
-      "2026년 12월 31일까지 편지를 남길 수 있어요. 2027년 1월 1일에 열려요.",
+      "26.12.31까지 남긴 편지가 27.1.1에 열려요.",
     );
   });
 
   it("윤년 2월 29일도 그대로 나온다", () => {
     expect(buildCapsuleDescription(pick("2028-02-29", "2028-03-01"))).toBe(
-      "2028년 2월 29일까지 편지를 남길 수 있어요. 2028년 3월 1일에 열려요.",
+      "28.2.29까지 남긴 편지가 28.3.1에 열려요.",
     );
   });
 
@@ -48,7 +48,7 @@ describe("buildCapsuleDescription", () => {
     };
 
     expect(buildCapsuleDescription(period)).toBe(
-      "2026년 12월 25일까지 편지를 남길 수 있어요. 2027년 1월 1일에 열려요.",
+      "26.12.25까지 남긴 편지가 27.1.1에 열려요.",
     );
   });
 
@@ -63,5 +63,15 @@ describe("buildCapsuleDescription", () => {
 
     expect(period.writeUntil.getTime()).toBe(before.writeUntil);
     expect(period.openAt.getTime()).toBe(before.openAt);
+  });
+
+  /*
+    카카오 공유 미리보기는 설명이 길면 뒤를 자른다. 예전 문구가 47자였고 실기기에서
+    잘렸다. 다시 길어지면 여기서 걸린다.
+  */
+  it("카카오가 자르지 않을 길이를 유지한다", () => {
+    const longest = buildCapsuleDescription(pick("2026-12-25", "2027-12-31"));
+
+    expect(longest.length).toBeLessThanOrEqual(35);
   });
 });
