@@ -93,7 +93,7 @@ function Participation({
 
   if (data.letterCount === 0) {
     return (
-      <p className="text-sm leading-[1.6] text-ink-dim">
+      <p className="text-center text-sm leading-[1.6] text-ink-dim">
         아직 편지가 없어요.
         <br />첫 편지를 남겨볼까요?
       </p>

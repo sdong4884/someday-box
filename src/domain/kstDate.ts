@@ -185,3 +185,15 @@ export function formatKstDate(date: Date): string {
 
   return `${year}년 ${month}월 ${day}일`;
 }
+
+/**
+ * 짧은 표기. `2026-12-31T15:00:00Z` → `'27.1.1'`
+ *
+ * 카카오 공유 미리보기는 설명이 길면 뒤를 자른다. 연도는 두 자리로 줄이고 월·일에는
+ * 0 을 채우지 않는다.
+ */
+export function formatKstDateShort(date: Date): string {
+  const { year, month, day } = toKstParts(date);
+
+  return `${pad(year % 100, 2)}.${month}.${day}`;
+}

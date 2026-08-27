@@ -70,19 +70,20 @@ const DATE_PLACEHOLDER_CLASS =
   "pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-base text-ink-dim";
 
 /**
- * 입력칸 아무 곳이나 눌러도 날짜 피커를 연다.
+ * 껍데기 아무 곳이나 눌러도 날짜 피커를 연다.
  *
- * 기본 동작은 우측의 작은 달력 아이콘을 정확히 눌러야 열리는 것이라 모바일에서 표적이
- * 너무 작다. showPicker() 는 표준 API 이고, 클릭이 사용자 제스처라 호출 조건을 만족한다.
+ * 입력창에만 걸면 아이콘과 우측 여백을 눌렀을 때 아무 일도 일어나지 않는다 — 아이콘은
+ * 이벤트를 통과시키므로 클릭이 껍데기로 떨어지기 때문이다. 모바일에서 표적이 작아
+ * 그쪽을 누르기 쉬운데, 그때 달력이 안 열리면 고장으로 보인다.
  *
- * 구형 인앱 웹뷰에는 이 메서드가 없을 수 있고 상태에 따라 던지기도 한다
+ * 구형 인앱 웹뷰에는 showPicker 가 없을 수 있고 상태에 따라 던지기도 한다
  * (제스처 없이 불리면 NotAllowedError). 둘 다 삼킨다 — 실패해도 칸을 누르면 브라우저가
  * 여는 기본 동작이 그대로 남으므로 잃는 것이 없다.
  */
-export function openDatePicker(event: MouseEvent<HTMLInputElement>) {
-  const input = event.currentTarget;
+function openDatePicker(event: MouseEvent<HTMLDivElement>) {
+  const input = event.currentTarget.querySelector("input");
 
-  if (typeof input.showPicker !== "function") return;
+  if (!input || input.disabled || typeof input.showPicker !== "function") return;
 
   try {
     input.showPicker();
@@ -98,7 +99,7 @@ export function openDatePicker(event: MouseEvent<HTMLInputElement>) {
  * `::-webkit-calendar-picker-indicator` 를 아예 그리지 않고 데스크톱 크롬은 그린다.
  * 그대로 두면 기기마다 아이콘이 있다 없다 해서, 정작 주 유입 경로인 모바일에서 날짜 칸이
  * 빈 상자로 보인다. 그래서 네이티브 쪽은 숨기고 우리 SVG 하나로 통일한다. 여는 동작은
- * `openDatePicker` 가 칸 전체에 걸어 두므로 아이콘은 표시만 맡는다.
+ * 껍데기가 받으므로 아이콘은 표시만 맡는다.
  *
  * `type`·`className` 은 받지 않는다 — 껍데기와 입력창이 짝이라는 전제를 호출부가 깨면
  * 넘침이 되돌아온다.
@@ -114,10 +115,10 @@ export function DateInput({
 }) {
   const boxClass = props.disabled
     ? `${DATE_BOX_CLASS} bg-surface-muted`
-    : DATE_BOX_CLASS;
+    : `${DATE_BOX_CLASS} cursor-pointer`;
 
   return (
-    <div className={boxClass}>
+    <div className={boxClass} onClick={openDatePicker}>
       <input
         {...props}
         type="date"
