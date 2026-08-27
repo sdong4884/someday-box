@@ -26,7 +26,6 @@ import {
   INPUT_CLASS,
   ScreenHeader,
   fieldAria,
-  openDatePicker,
 } from "@/shared/ui/formParts";
 import { getRpcErrorMessage } from "@/lib/rpcError";
 import { showToast } from "@/shared/toast/toastStore";
@@ -189,7 +188,6 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
             {...writeUntilAria}
             min={writeUntilMin}
             max={writeUntilMax}
-            onClick={openDatePicker}
             isEmpty={!writeUntil}
           />
         </Field>
@@ -205,7 +203,6 @@ export function CreateCapsuleForm({ now }: { now: Date }) {
             {...openAtAria}
             min={openAtMin}
             max={openAtMax}
-            onClick={openDatePicker}
             isEmpty={!openAt}
           />
         </Field>
