@@ -3,8 +3,8 @@
 import { useToastStore } from "@/shared/toast/toastStore";
 
 const VARIANT_CLASS = {
-  info: "bg-zinc-900/95 text-zinc-50",
-  error: "bg-red-600/95 text-white",
+  info: "border border-line-strong bg-surface text-ink",
+  error: "bg-danger text-bg",
 } as const;
 
 /** 카카오톡 인앱 브라우저의 하단 바에 가리지 않도록 safe-area 만큼 띄운다. */
@@ -25,7 +25,7 @@ export function Toaster() {
           key={toast.id}
           type="button"
           onClick={() => dismiss(toast.id)}
-          className={`pointer-events-auto w-fit max-w-sm rounded-xl px-4 py-3 text-left text-sm break-words shadow-lg ${VARIANT_CLASS[toast.variant]}`}
+          className={`pointer-events-auto w-fit max-w-sm rounded-card px-4 py-3 text-left text-sm break-words shadow-lg ${VARIANT_CLASS[toast.variant]}`}
         >
           {toast.message}
         </button>
