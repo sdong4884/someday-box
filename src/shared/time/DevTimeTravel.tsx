@@ -20,18 +20,13 @@ const BUTTON_CLASS =
   "rounded-md bg-zinc-700 px-2 py-1 transition-colors hover:bg-zinc-600 active:bg-zinc-500";
 
 /**
- * 개발 환경 전용 시간 이동 위젯.
- *
- * 오프셋만 밀 뿐 서버 시각은 건드리지 못한다. 서버 컴포넌트와 Supabase RPC 는 진짜
- * now() 를 쓰므로, 만료 시점을 넘겨도 편지 원문이 실제로 열리지는 않는다.
- * 화면 전환과 D-day 표시를 확인하는 용도다.
+ * 오프셋만 민다. 서버와 Supabase RPC 는 진짜 now() 를 쓰므로 만료를 넘겨도 편지 원문이
+ * 열리지는 않는다 — 화면 전환과 D-day 표시 확인용이다.
  */
 export function DevTimeTravel() {
   const now = useNow();
   const offset = useDevTimeOffset();
 
-  // NowProvider 의 마운트 게이트를 그대로 재사용한다. localStorage 를 읽은 시각이
-  // 들어오기 전까지는 아무것도 그리지 않는다.
   if (!isTimeTravelEnabled() || !now) return null;
 
   const shift = (ms: number) => {
