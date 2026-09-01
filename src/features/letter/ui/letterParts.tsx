@@ -46,7 +46,6 @@ export function CharCounter({ length, max }: { length: number; max: number }) {
   );
 }
 
-/** 작성·수정 폼이 같은 내용 칸을 그린다. */
 export function ContentField({
   register,
   length,
@@ -70,7 +69,6 @@ export function ContentField({
   );
 }
 
-/** 값이 박힌 채 못 고치는 칸. 수정 화면의 닉네임·비밀번호가 쓴다. */
 export function ReadonlyField({
   id,
   label,

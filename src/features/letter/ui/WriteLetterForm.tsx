@@ -84,35 +84,26 @@ export function WriteLetterForm({ capsule }: { capsule: CapsulePublic }) {
     id: "password",
     error: errors.password?.message,
   });
-  /*
-   * 연타 방어. isSubmitting 은 React 상태라 리렌더가 있어야 버튼이 잠기는데, 한 프레임 안에
-   * 클릭이 몰리면 그 사이 리렌더가 없어 전부 통과한다. create_capsule 은 중복 방지 장치가
-   * 없어 그만큼 캡슐이 생긴다. ref 는 리렌더와 무관하게 즉시 선다.
-   */
+  // 연타 방어. isSubmitting 은 리렌더가 있어야 서는데 한 프레임 안에 몰린 클릭은 전부
+  // 통과한다. RPC 에 중복 방지 장치가 없어 그만큼 만들어진다. ref 는 즉시 선다.
   const submit = async (values: CreateLetterInput) => {
     if (submitting.current) return;
     submitting.current = true;
 
     try {
       await mutation.mutateAsync(values);
-      // 성공하면 풀지 않는다. 화면이 바뀔 때까지 이 폼은 잠긴 채로 있어야 한다.
     } catch {
-      // 실패 처리는 onError 가 한다. 다시 낼 수 있게 여기서만 푼다.
+      // 다시 낼 수 있게 여기서만 푼다. 성공 시엔 화면이 바뀔 때까지 잠근 채로 둔다.
       submitting.current = false;
     }
   };
 
-  /*
-   * router.push 는 기다려주지 않는다. mutateAsync 가 끝나면 isSubmitting 이 바로 떨어지는데
-   * 화면 전환은 그 뒤라, 그 사이에 폼이 되살아나 버튼이 다시 눌린다. 성공 후에는 언마운트될
-   * 때까지 덮어 둔다.
-   */
+  // router.push 는 기다려주지 않는다. isSubmitting 이 먼저 떨어져 전환 전에 폼이 되살아난다.
   const locked = isSubmitting || mutation.isSuccess;
 
   return (
     <form
-      // handleSubmit 을 이벤트 안에서 부른다. render 중에 부르면 submit 이 닫고 있는
-      // ref 를 그때 읽는 것으로 보여 react-hooks/refs 가 막는다.
+      // render 중에 부르면 submit 이 닫고 있는 ref 를 그때 읽는 것으로 보여 lint 가 막는다.
       onSubmit={(event) => handleSubmit(submit)(event)}
       // 없으면 네이티브 말풍선이 submit 을 막아 zod 문구가 화면에 닿지 못한다.
       noValidate
