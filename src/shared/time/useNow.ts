@@ -14,22 +14,12 @@ function useNowSnapshot() {
   return snapshot;
 }
 
-/**
- * 현재 시각. **마운트 전에는 `null`** 이다 (NowProvider 의 마운트 게이트).
- *
- * 시각에 의존하는 화면은 null 을 분기해 자리표시자를 그린다.
- *
- * ```tsx
- * const now = useNow();
- * if (!now) return <Skeleton />;
- * const status = getCapsuleStatus(period, now);
- * ```
- */
+/** **마운트 전에는 `null`** 이다. 시각에 의존하는 화면은 null 을 분기해야 한다. */
 export function useNow(): Date | null {
   return useNowSnapshot()?.now ?? null;
 }
 
-/** 적용 중인 개발용 오프셋(ms). DevTimeTravel 전용. 프로덕션에서는 항상 0. */
+/** DevTimeTravel 전용. 프로덕션에서는 항상 0. */
 export function useDevTimeOffset(): number {
   return useNowSnapshot()?.offset ?? 0;
 }

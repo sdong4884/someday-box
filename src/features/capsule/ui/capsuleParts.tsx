@@ -152,12 +152,7 @@ export function CountdownCard({
 const SAVE_LINK_CLASS =
   "flex min-h-control flex-1 items-center justify-center gap-1.5 text-xs text-accent-soft transition-opacity active:opacity-70";
 
-/**
- * 둘 다 평범한 `<a>` 다. 웹뷰에서 `window.open` 이 막히는 경우가 있어 링크가 가장 튼튼하다.
- *
- * 구글 링크는 일정 추가 화면을 미리 채워 열 뿐이고 저장은 사용자가 누른다. `.ics` 는
- * 아이폰·삼성·아웃룩까지 받는 범용 경로라 둘을 함께 둔다.
- */
+/** 둘 다 평범한 `<a>` 다 — 웹뷰에서 `window.open` 이 막히는 경우가 있다. */
 function CalendarSaveRow({
   slug,
   title,
@@ -231,10 +226,7 @@ function DownloadIcon() {
 
 const BADGE_CLASS = "rounded-pill bg-surface px-3 py-1.5 text-xs text-ink-muted";
 
-/**
- * `onSelect` 가 없으면 `<span>` 이다. disabled 버튼은 스크린 리더가 "사용 불가 버튼" 으로
- * 읽어 언젠가 눌릴 수 있는 것처럼 들린다 — 잠긴 캡슐의 닉네임은 라벨이지 조작 대상이 아니다.
- */
+/** disabled 버튼은 스크린 리더가 "사용 불가 버튼" 으로 읽는다. 라벨은 `<span>` 이어야 한다. */
 export function NicknameList({
   nicknames,
   onSelect,

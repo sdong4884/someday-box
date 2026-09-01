@@ -1,9 +1,3 @@
-/**
- * 공개일을 각자 캘린더에 담아가기 위한 .ics 생성 (docs/decisions.md §5).
- *
- * 시각은 전부 인자로 받는다 — 안에서 `new Date()` 를 부르면 DTSTAMP 를 테스트할 수 없다.
- */
-
 export type CapsuleIcsInput = {
   slug: string;
   title: string;
@@ -29,7 +23,7 @@ function formatIcsUtc(date: Date): string {
   );
 }
 
-/** 역슬래시를 먼저 바꾼다. 순서가 바뀌면 뒤에서 넣은 이스케이프가 다시 escape 된다. */
+/** 역슬래시가 먼저다. 순서가 바뀌면 뒤에서 넣은 이스케이프가 다시 escape 된다. */
 function escapeText(value: string): string {
   return value
     .replace(/\\/g, "\\\\")
@@ -40,10 +34,7 @@ function escapeText(value: string): string {
 
 const encoder = new TextEncoder();
 
-/**
- * RFC 5545 의 75**옥텟** 접기. 글자가 아니라 바이트로 센다 — 한글 한 자가 3바이트라
- * 글자 수로 세면 규격을 넘고, 바이트로 잘라도 시퀀스 중간을 끊으면 글자가 깨진다.
- */
+/** RFC 5545 는 75**옥텟**으로 접는다. 한글 한 자가 3바이트라 글자 수로 세면 규격을 넘는다. */
 function foldLine(line: string): string {
   if (encoder.encode(line).length <= MAX_OCTETS) return line;
 
@@ -105,13 +96,7 @@ export function buildCapsuleIcs(input: CapsuleIcsInput): string {
 
 const GOOGLE_RENDER_URL = "https://calendar.google.com/calendar/render";
 
-/**
- * 구글 캘린더의 "일정 추가" 화면을 미리 채워 여는 링크. 저장은 사용자가 눌러야 한다 —
- * 확인 없이 남의 캘린더에 쓰려면 OAuth 가 필요하다.
- *
- * dates 는 .ics 의 DTSTART/DTEND 와 같은 값을 쓴다. 두 경로가 갈라지면 같은 캡슐이
- * 캘린더마다 다른 시각에 잡힌다.
- */
+/** dates 는 .ics 의 DTSTART/DTEND 와 같아야 한다. 갈라지면 캘린더마다 시각이 달라진다. */
 export function buildGoogleCalendarUrl(input: {
   title: string;
   openAt: Date;
