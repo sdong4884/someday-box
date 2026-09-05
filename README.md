@@ -74,4 +74,6 @@ npm run dev
 
 ## 블로그
 
-✏️ **[Supabase RLS로 시간 잠금 구현하기](https://velog.io/@sdong/Supabase-RLS로-시간-잠금-구현하기)**
+✏️ **[Supabase RLS로 시간 잠금 구현하기](https://velog.io/@sdong/Supabase-RLS로-시간-잠금-구현하기)** <br />
+✏️ **[UI 테스트를 위한, 시간 의존 로직 설계](https://velog.io/@sdong/UI-테스트를-위한-시간-의존-로직-설계)** <br />
+✏️ **[Next.js App Router에서 서버·클라이언트 경계를 나눈 기준](https://velog.io/@sdong/Next.js-App-Router에서-서버클라이언트-경계를-나눈-기준)**
