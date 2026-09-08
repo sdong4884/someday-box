@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 
 import { buildGoogleCalendarUrl } from "@/domain/calendar";
 import type { CapsulePublic } from "@/lib/dbColumns";
+import { getRpcErrorMessage, isRetriableError } from "@/lib/rpcError";
 import { showToast } from "@/shared/toast/toastStore";
 
 export function CapsuleHeader({ capsule }: { capsule: CapsulePublic }) {
@@ -178,10 +179,7 @@ function CalendarSaveRow({
 
       <span aria-hidden="true" className="my-2 w-px bg-line" />
 
-      <a
-        href={`/api/c/${slug}/calendar.ics`}
-        className={SAVE_LINK_CLASS}
-      >
+      <a href={`/api/c/${slug}/calendar.ics`} className={SAVE_LINK_CLASS}>
         <DownloadIcon />
         캘린더 파일
       </a>
@@ -224,7 +222,8 @@ function DownloadIcon() {
   );
 }
 
-const BADGE_CLASS = "rounded-pill bg-surface px-3 py-1.5 text-xs text-ink-muted";
+const BADGE_CLASS =
+  "rounded-pill bg-surface px-3 py-1.5 text-xs text-ink-muted";
 
 /** disabled 버튼은 스크린 리더가 "사용 불가 버튼" 으로 읽는다. 라벨은 `<span>` 이어야 한다. */
 export function NicknameList({
@@ -252,6 +251,52 @@ export function NicknameList({
         </li>
       ))}
     </ul>
+  );
+}
+
+const RETRY_BUTTON_CLASS =
+  "flex min-h-control items-center justify-center rounded-pill bg-surface px-4 text-xs text-accent-soft transition-opacity active:opacity-70 disabled:opacity-40";
+
+export function LoadFailure({
+  error,
+  onRetry,
+  isRetrying,
+}: {
+  error: unknown;
+  onRetry: () => void;
+  isRetrying: boolean;
+}) {
+  return (
+    <div role="alert" className="flex flex-col items-center gap-3">
+      <p className="text-center text-sm leading-[1.6] text-ink-muted">
+        {getRpcErrorMessage(error)}
+      </p>
+
+      {isRetriableError(error) && (
+        <button
+          type="button"
+          onClick={onRetry}
+          disabled={isRetrying}
+          className={RETRY_BUTTON_CLASS}
+        >
+          {isRetrying ? "다시 시도 중" : "다시 시도"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function LoadingPlaceholder({ label }: { label: string }) {
+  return (
+    <>
+      <span role="status" className="sr-only">
+        {label}
+      </span>
+
+      <p aria-hidden="true" className="invisible text-sm">
+        불러오는 중
+      </p>
+    </>
   );
 }
 

@@ -3,7 +3,11 @@
 import { formatKstDate } from "@/domain/kstDate";
 import { useCapsuleLetters } from "@/features/capsule/api/useCapsuleLetters";
 import { getCapsulePeriod } from "@/features/capsule/model/capsulePeriod";
-import { CapsuleHeader } from "@/features/capsule/ui/capsuleParts";
+import {
+  CapsuleHeader,
+  LoadFailure,
+  LoadingPlaceholder,
+} from "@/features/capsule/ui/capsuleParts";
 import type { CapsulePublic, LetterPublic } from "@/lib/dbColumns";
 
 export function OpenedView({ capsule }: { capsule: CapsulePublic }) {
@@ -23,15 +27,18 @@ export function OpenedView({ capsule }: { capsule: CapsulePublic }) {
 }
 
 function LetterList({ slug, capsuleId }: { slug: string; capsuleId: string }) {
-  const { data, isPending, isError } = useCapsuleLetters(slug, capsuleId);
+  const { data, isPending, isError, error, refetch, isFetching } =
+    useCapsuleLetters(slug, capsuleId);
 
-  if (isError) return null;
+  if (isPending) return <LoadingPlaceholder label="편지를 불러오는 중" />;
 
-  if (isPending) {
+  if (isError) {
     return (
-      <p aria-hidden="true" className="invisible text-sm">
-        불러오는 중
-      </p>
+      <LoadFailure
+        error={error}
+        onRetry={() => refetch()}
+        isRetrying={isFetching}
+      />
     );
   }
 
