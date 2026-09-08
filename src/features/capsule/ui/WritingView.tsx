@@ -11,6 +11,8 @@ import {
   CapsuleHeader,
   CountdownCard,
   EnvelopeIcon,
+  LoadFailure,
+  LoadingPlaceholder,
   NicknameList,
 } from "@/features/capsule/ui/capsuleParts";
 import { EditLetterForm } from "@/features/letter/ui/EditLetterForm";
@@ -78,16 +80,19 @@ function Participation({
   slug: string;
   onUnlock: (letter: UnlockedLetter) => void;
 }) {
-  const { data, isPending, isError } = useCapsuleSummary(slug);
+  const { data, isPending, isError, error, refetch, isFetching } =
+    useCapsuleSummary(slug);
   const [pending, setPending] = useState<string | null>(null);
 
-  if (isError) return null;
+  if (isPending) return <LoadingPlaceholder label="참여 현황을 불러오는 중" />;
 
-  if (isPending) {
+  if (isError) {
     return (
-      <p aria-hidden="true" className="invisible text-sm">
-        불러오는 중
-      </p>
+      <LoadFailure
+        error={error}
+        onRetry={() => refetch()}
+        isRetrying={isFetching}
+      />
     );
   }
 

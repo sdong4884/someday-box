@@ -8,6 +8,8 @@ import { formatDdayLabel } from "@/features/capsule/model/dday";
 import {
   CapsuleHeader,
   CountdownCard,
+  LoadFailure,
+  LoadingPlaceholder,
   LockIcon,
   NicknameList,
 } from "@/features/capsule/ui/capsuleParts";
@@ -45,15 +47,18 @@ export function LockedView({
 }
 
 function LockedParticipation({ slug }: { slug: string }) {
-  const { data, isPending, isError } = useCapsuleSummary(slug);
+  const { data, isPending, isError, error, refetch, isFetching } =
+    useCapsuleSummary(slug);
 
-  if (isError) return null;
+  if (isPending) return <LoadingPlaceholder label="참여 현황을 불러오는 중" />;
 
-  if (isPending) {
+  if (isError) {
     return (
-      <p aria-hidden="true" className="invisible text-sm">
-        불러오는 중
-      </p>
+      <LoadFailure
+        error={error}
+        onRetry={() => refetch()}
+        isRetrying={isFetching}
+      />
     );
   }
 
