@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { getCapsuleBySlug } from "@/features/capsule/api/getCapsule";
-import { buildCapsuleDescription } from "@/features/capsule/model/capsuleMetadata";
-import { getCapsulePeriod } from "@/features/capsule/model/capsulePeriod";
+import { buildCapsuleMetadata } from "@/features/capsule/model/capsuleMetadata";
 import { CapsuleScreen } from "@/features/capsule/ui/CapsuleScreen";
-import { OG_DEFAULTS, resolveSiteUrl } from "@/lib/siteMetadata";
+import { NOINDEX_ROBOTS, resolveSiteUrl } from "@/lib/siteMetadata";
 
 export async function generateMetadata({
   params,
@@ -14,20 +13,10 @@ export async function generateMetadata({
 
   const capsule = await getCapsuleBySlug(slug).catch(() => null);
 
-  if (!capsule) return {};
+  // 조회가 흔들려도 색인 차단만은 남긴다.
+  if (!capsule) return { robots: NOINDEX_ROBOTS };
 
-  const description = buildCapsuleDescription(getCapsulePeriod(capsule));
-
-  return {
-    title: capsule.title,
-    description,
-    openGraph: {
-      ...OG_DEFAULTS,
-      title: capsule.title,
-      description,
-      url: `/c/${slug}`,
-    },
-  };
+  return buildCapsuleMetadata(capsule);
 }
 
 export default async function CapsulePage({ params }: PageProps<"/c/[slug]">) {

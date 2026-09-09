@@ -37,3 +37,9 @@ export const OG_DEFAULTS = {
   type: "website",
   images: [{ url: "/og.png", width: 1200, height: 630 }],
 } as const satisfies Metadata["openGraph"];
+
+/** 캡슐 화면은 링크를 받은 사람만 본다(docs/decisions.md §2). 제목이 색인되면 그게 깨진다. */
+export const NOINDEX_ROBOTS = {
+  index: false,
+  follow: false,
+} as const satisfies Metadata["robots"];

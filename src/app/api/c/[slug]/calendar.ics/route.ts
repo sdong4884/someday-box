@@ -25,6 +25,8 @@ export async function GET(
   return new Response(ics, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
+      // HTML 이 아니라 noindex 메타를 못 붙인다. 제목과 개봉일이 그대로 들어 있다.
+      "X-Robots-Tag": "noindex, nofollow",
       // slug 는 URL-safe 알파벳이라 따옴표를 깨뜨릴 문자가 없다.
       "Content-Disposition": `attachment; filename="someday-box-${slug}.ics"`,
       // DTSTAMP 가 요청마다 달라 캐시가 의미 없다.

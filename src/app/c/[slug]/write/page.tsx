@@ -3,10 +3,11 @@ import { notFound } from "next/navigation";
 
 import { getCapsuleBySlug } from "@/features/capsule/api/getCapsule";
 import { WriteLetterScreen } from "@/features/letter/ui/WriteLetterScreen";
+import { NOINDEX_ROBOTS } from "@/lib/siteMetadata";
 
 export const metadata: Metadata = {
   title: "편지 쓰기 — Someday Box",
-  robots: { index: false },
+  robots: NOINDEX_ROBOTS,
 };
 
 export default async function WriteLetterPage({
