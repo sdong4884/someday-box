@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { type CapsulePeriod, writeUntilFromKstDate } from "@/domain/capsule";
 import { kstDateStringToUtc } from "@/domain/kstDate";
-import { buildCapsuleDescription } from "@/features/capsule/model/capsuleMetadata";
+import {
+  buildCapsuleDescription,
+  buildCapsuleMetadata,
+} from "@/features/capsule/model/capsuleMetadata";
+import type { CapsulePublic } from "@/lib/dbColumns";
 
 /** 사용자가 폼에서 고른 두 날짜로 저장될 기간을 만든다. */
 function pick(writeUntil: string, openAt: string): CapsulePeriod {
@@ -73,5 +77,56 @@ describe("buildCapsuleDescription", () => {
     const longest = buildCapsuleDescription(pick("2026-12-25", "2027-12-31"));
 
     expect(longest.length).toBeLessThanOrEqual(35);
+  });
+});
+
+/** 조회로 내려오는 행 모양. 메타데이터가 읽는 컬럼만 의미를 갖는다. */
+function row(overrides: Partial<CapsulePublic> = {}): CapsulePublic {
+  return {
+    id: "00000000-0000-0000-0000-000000000000",
+    slug: "quiet-lavender-42",
+    title: "졸업하는 날에",
+    write_until: writeUntilFromKstDate("2026-12-25").toISOString(),
+    open_at: kstDateStringToUtc("2027-01-01").toISOString(),
+    created_at: kstDateStringToUtc("2026-01-01").toISOString(),
+    ...overrides,
+  };
+}
+
+describe("buildCapsuleMetadata", () => {
+  it("검색 색인과 링크 추적을 모두 막는다", () => {
+    expect(buildCapsuleMetadata(row()).robots).toEqual({
+      index: false,
+      follow: false,
+    });
+  });
+
+  /*
+    카카오톡 링크 공유가 주 유입 경로다(docs/decisions.md §1). robots 를 붙이면서
+    OG 태그를 흘리면 미리보기가 통째로 빈칸이 된다.
+  */
+  it("색인을 막아도 카카오가 읽는 OG 태그는 남긴다", () => {
+    const og = buildCapsuleMetadata(row()).openGraph;
+
+    expect(og).toMatchObject({
+      title: "졸업하는 날에",
+      description: "26.12.25까지 남긴 편지가 27.1.1에 열려요.",
+      siteName: "Someday Box",
+      locale: "ko_KR",
+      images: [{ url: "/og.png", width: 1200, height: 630 }],
+    });
+  });
+
+  it("og:url 을 캡슐 주소로 세운다", () => {
+    const og = buildCapsuleMetadata(row({ slug: "still-morning-7" })).openGraph;
+
+    expect(og).toMatchObject({ url: "/c/still-morning-7" });
+  });
+
+  it("title 과 description 을 OG 와 같은 값으로 맞춘다", () => {
+    const meta = buildCapsuleMetadata(row());
+
+    expect(meta.title).toBe("졸업하는 날에");
+    expect(meta.description).toBe("26.12.25까지 남긴 편지가 27.1.1에 열려요.");
   });
 });
