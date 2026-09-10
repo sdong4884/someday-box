@@ -39,7 +39,8 @@ export function WriteLetterScreen({ capsule }: { capsule: CapsulePublic }) {
   return <WriteLetterForm capsule={capsule} />;
 }
 
-function WriteLetterShell() {
+/** 마운트 전 분기와 write/loading.tsx 가 함께 쓴다. 캡슐 데이터에 의존하지 않아야 한다. */
+export function WriteLetterShell() {
   return (
     <div className="flex flex-1 flex-col">
       <ScreenHeader title="편지 쓰기" submitLabel="저장" submitDisabled />
