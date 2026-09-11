@@ -132,6 +132,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      delete_letter: {
+        Args: { p_nickname: string; p_password: string; p_slug: string }
+        Returns: string
+      }
       generate_capsule_slug: { Args: never; Returns: string }
       get_capsule_summary: {
         Args: { p_slug: string }
